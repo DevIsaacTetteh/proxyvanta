@@ -5,7 +5,6 @@ import {
   DialogContent,
   useTheme,
   useMediaQuery,
-  Slide,
   IconButton,
   Box
 } from '@mui/material';
