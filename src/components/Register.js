@@ -210,7 +210,7 @@ const Register = () => {
         <Card
           elevation={24}
           sx={{
-            maxWidth: 520,
+            maxWidth: 450,
             width: '100%',
             borderRadius: 4,
             backdropFilter: 'blur(20px)',
@@ -275,7 +275,7 @@ const Register = () => {
             />
           </Box>
 
-          <CardContent sx={{ p: 4 }}>
+          <CardContent sx={{ p: 3 }}>
             <Typography
               variant="h5"
               component="h2"
@@ -289,7 +289,7 @@ const Register = () => {
             <Typography
               variant="body2"
               align="center"
-              sx={{ color: 'text.secondary', mb: 3 }}
+              sx={{ color: 'text.secondary', mb: 2 }}
             >
               Get started with secure proxy management
             </Typography>
@@ -298,7 +298,7 @@ const Register = () => {
               <Alert
                 severity="success"
                 sx={{
-                  mb: 3,
+                  mb: 2,
                   borderRadius: 2,
                   '& .MuiAlert-icon': {
                     color: theme.palette.success.main
@@ -314,7 +314,7 @@ const Register = () => {
               <Alert
                 severity="error"
                 sx={{
-                  mb: 3,
+                  mb: 2,
                   borderRadius: 2,
                   '& .MuiAlert-icon': {
                     color: theme.palette.error.main
@@ -465,7 +465,7 @@ const Register = () => {
                 }}
               />
 
-              <Box sx={{ mt: 3, mb: 2 }}>
+              <Box sx={{ mt: 2, mb: 1 }}>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -510,9 +510,9 @@ const Register = () => {
                 variant="contained"
                 disabled={loading || !formData.acceptTerms || !formData.acceptPrivacy}
                 sx={{
-                  mt: 2,
-                  mb: 3,
-                  py: 1.5,
+                  mt: 1,
+                  mb: 2,
+                  py: 1.25,
                   fontSize: '1rem',
                   fontWeight: 600,
                   background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
@@ -531,7 +531,7 @@ const Register = () => {
                 {!loading && <PersonAdd sx={{ ml: 1, fontSize: '1.2rem' }} />}
               </Button>
 
-              <Divider sx={{ my: 3 }}>
+              <Divider sx={{ my: 2 }}>
                 <Typography variant="body2" color="text.secondary">
                   or
                 </Typography>
@@ -540,9 +540,10 @@ const Register = () => {
               <Button
                 fullWidth
                 variant="outlined"
+                disabled={loading}
                 sx={{
-                  mb: 3,
-                  py: 1.5,
+                  mb: 2,
+                  py: 1.25,
                   borderColor: theme.palette.grey[300],
                   color: theme.palette.text.secondary,
                   '&:hover': {
@@ -577,8 +578,8 @@ const Register = () => {
             </Box>
 
             {/* Security tips */}
-            <Box sx={{ mt: 4, p: 2, background: 'rgba(26, 35, 126, 0.04)', borderRadius: 2 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 1 }}>
+            <Box sx={{ mt: 2, p: 1.5, background: 'rgba(26, 35, 126, 0.04)', borderRadius: 2 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 0.5 }}>
                 🛡️ Account Security:
               </Typography>
               <Typography variant="caption" color="text.secondary" component="div">
@@ -590,7 +591,7 @@ const Register = () => {
             </Box>
 
             {/* Info box */}
-            <Box sx={{ mt: 2, p: 2, background: 'rgba(255, 152, 0, 0.1)', borderRadius: 2, border: '1px solid rgba(255, 152, 0, 0.2)' }}>
+            <Box sx={{ mt: 1, p: 1.5, background: 'rgba(255, 152, 0, 0.1)', borderRadius: 2, border: '1px solid rgba(255, 152, 0, 0.2)' }}>
               <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
                 <Info sx={{ color: theme.palette.warning.main, mr: 1, mt: 0.5, fontSize: '1rem' }} />
                 <Box>

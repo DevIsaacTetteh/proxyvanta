@@ -11,6 +11,7 @@ import {
   InputAdornment,
   Divider,
   Zoom,
+  Fade,
   useTheme,
   Card,
   CardContent,
@@ -116,87 +117,33 @@ const Login = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         p: 2,
-        position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-          opacity: 0.1,
-        }
       }}
     >
-      {/* Background decorative elements */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '10%',
-          left: '10%',
-          width: '200px',
-          height: '200px',
-          borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.1)',
-          filter: 'blur(40px)',
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: '10%',
-          right: '10%',
-          width: '150px',
-          height: '150px',
-          borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.1)',
-          filter: 'blur(30px)',
-        }}
-      />
-
-      <Zoom in={true} timeout={600}>
+      <Fade in={true} timeout={500}>
         <Card
-          elevation={24}
+          elevation={8}
           sx={{
-            maxWidth: 480,
+            maxWidth: 400,
             width: '100%',
-            borderRadius: 4,
-            backdropFilter: 'blur(20px)',
-            background: 'rgba(255, 255, 255, 0.95)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: 3,
+            background: 'white',
             position: 'relative',
-            overflow: 'visible',
           }}
         >
-          {/* Header with branding */}
+          {/* Header */}
           <Box
             sx={{
-              background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 50%, #5e35b1 100%)',
-              p: 3,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              p: 2,
               textAlign: 'center',
-              borderRadius: '4px 4px 0 0',
-              position: 'relative',
+              color: 'white',
             }}
           >
-            <Avatar
-              sx={{
-                width: 60,
-                height: 60,
-                mx: 'auto',
-                mb: 2,
-                background: 'rgba(255, 255, 255, 0.2)',
-                backdropFilter: 'blur(10px)',
-              }}
-            >
-              <VpnKey sx={{ fontSize: 30, color: 'white' }} />
-            </Avatar>
             <Typography
               variant="h4"
               component="h1"
@@ -230,13 +177,13 @@ const Login = () => {
             />
           </Box>
 
-          <CardContent sx={{ p: 4 }}>
+          <CardContent sx={{ p: 3 }}>
             <Typography
               variant="h5"
               component="h2"
               gutterBottom
               align="center"
-              sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 3 }}
+              sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 2 }}
             >
               Welcome Back
             </Typography>
@@ -244,7 +191,7 @@ const Login = () => {
             <Typography
               variant="body2"
               align="center"
-              sx={{ color: 'text.secondary', mb: 3 }}
+              sx={{ color: 'text.secondary', mb: 2 }}
             >
               Sign in to access your proxy dashboard
             </Typography>
@@ -253,7 +200,7 @@ const Login = () => {
               <Alert
                 severity={isLocked ? "error" : "warning"}
                 sx={{
-                  mb: 3,
+                  mb: 2,
                   borderRadius: 2,
                   '& .MuiAlert-icon': {
                     color: isLocked ? theme.palette.error.main : theme.palette.warning.main
@@ -334,8 +281,8 @@ const Login = () => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  mt: 2,
-                  mb: 3,
+                  mt: 1,
+                  mb: 2,
                 }}
               >
                 <FormControlLabel
@@ -374,9 +321,9 @@ const Login = () => {
                 variant="contained"
                 disabled={loading || isLocked}
                 sx={{
-                  mt: 2,
-                  mb: 3,
-                  py: 1.5,
+                  mt: 1,
+                  mb: 2,
+                  py: 1.25,
                   fontSize: '1rem',
                   fontWeight: 600,
                   background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
@@ -395,7 +342,7 @@ const Login = () => {
                 {!loading && <CheckCircle sx={{ ml: 1, fontSize: '1.2rem' }} />}
               </Button>
 
-              <Divider sx={{ my: 3 }}>
+              <Divider sx={{ my: 2 }}>
                 <Typography variant="body2" color="text.secondary">
                   or
                 </Typography>
@@ -406,8 +353,8 @@ const Login = () => {
                 variant="outlined"
                 disabled={isLocked}
                 sx={{
-                  mb: 3,
-                  py: 1.5,
+                  mb: 2,
+                  py: 1.25,
                   borderColor: theme.palette.grey[300],
                   color: theme.palette.text.secondary,
                   '&:hover': {
@@ -446,7 +393,7 @@ const Login = () => {
             </Box>
 
             {/* Forgot Password */}
-            <Box sx={{ textAlign: 'center', mt: 2 }}>
+            <Box sx={{ textAlign: 'center', mt: 1 }}>
               <Button
                 variant="text"
                 onClick={() => navigate('/forgot-password')}
@@ -469,8 +416,8 @@ const Login = () => {
             </Box>
 
             {/* Security tips */}
-            <Box sx={{ mt: 4, p: 2, background: 'rgba(26, 35, 126, 0.04)', borderRadius: 2 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 1 }}>
+            <Box sx={{ mt: 2, p: 1.5, background: 'rgba(26, 35, 126, 0.04)', borderRadius: 2 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 0.5 }}>
                 🔒 Security Tips:
               </Typography>
               <Typography variant="caption" color="text.secondary" component="div">
@@ -482,7 +429,7 @@ const Login = () => {
             </Box>
           </CardContent>
         </Card>
-      </Zoom>
+      </Fade>
     </Box>
   );
 };

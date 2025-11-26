@@ -9,6 +9,7 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
+    console.log('User API Request:', config.method?.toUpperCase(), config.url, 'Origin:', window.location.origin);
     const token = localStorage.getItem('userToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -20,8 +21,12 @@ api.interceptors.request.use(
 
 // Response interceptor for error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('User API Response:', response.status, response.config.url);
+    return response;
+  },
   (error) => {
+    console.error('User API Error:', error.response?.status, error.response?.data || error.message, error.config?.url);
     if (error.response?.status === 401) {
       localStorage.removeItem('userToken');
       window.location.href = '/login';
