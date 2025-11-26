@@ -104,6 +104,8 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Register attempt on device:', navigator.userAgent);
+    console.log('API URL:', process.env.REACT_APP_API_URL);
     setLoading(true);
     setError('');
     setMessage('');
@@ -134,10 +136,13 @@ const Register = () => {
     }
 
     try {
+      console.log('Calling register API...');
       await register(formData.email, formData.password);
+      console.log('Register successful');
       setMessage('🎉 Registration successful! Welcome to ProxyVanta!');
       setTimeout(() => navigate('/wallet'), 3000);
     } catch (err) {
+      console.error('Register error:', err);
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);

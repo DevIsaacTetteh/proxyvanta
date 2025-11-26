@@ -70,6 +70,8 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Login attempt on device:', navigator.userAgent);
+    console.log('API URL:', process.env.REACT_APP_API_URL);
 
     if (isLocked) {
       setError(`Account locked. Try again in ${lockTimeLeft} seconds.`);
@@ -85,9 +87,12 @@ const Login = () => {
     setError('');
 
     try {
+      console.log('Calling login API...');
       await login(formData.email, formData.password);
+      console.log('Login successful');
       navigate('/wallet');
     } catch (err) {
+      console.error('Login error:', err);
       const attempts = loginAttempts + 1;
       setLoginAttempts(attempts);
 
