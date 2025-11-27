@@ -405,7 +405,7 @@ const Purchase = () => {
                   </Typography>
                   <Grid container spacing={0.5}>
                     {ipOptions.map(ip => (
-                      <Grid item xs={3} sm={2.4} key={ip}>
+                      <Grid item xs={6} sm={4} md={3} key={ip}>
                         <Button
                           fullWidth
                           variant={selectedIPs === ip ? 'contained' : 'outlined'}

@@ -407,7 +407,8 @@ const SupportChat = ({ onClose }) => {
                 sx={{
                   flex: 1,
                   overflow: 'auto',
-                  maxHeight: { xs: 260, sm: 320, md: 400 }
+                  minHeight: { xs: 200, sm: 250, md: 300 },
+                  maxHeight: { xs: 300, sm: 380, md: 450 }
                 }}
               >
                 {loading ? (
@@ -484,7 +485,8 @@ const SupportChat = ({ onClose }) => {
               sx={{
                 borderRadius: 3,
                 boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                height: { xs: 360, sm: 420, md: 560 },
+                minHeight: { xs: 400, sm: 480, md: 560 },
+                maxHeight: { xs: '70vh', sm: '75vh', md: '80vh' },
                 display: 'flex',
                 flexDirection: 'column'
               }}

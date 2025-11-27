@@ -15,10 +15,21 @@ import {
   Cancel as CancelIcon,
   Add as AddIcon,
   Refresh as RefreshIcon,
-  Payment as PaymentIcon
+  Payment as PaymentIcon,
+  Campaign as CampaignIcon,
+  Announcement as AnnouncementIcon,
+  Update as UpdateIcon,
+  Build as BuildIcon,
+  LocalOffer as PromotionIcon,
+  PriorityHigh as HighPriorityIcon,
+  Warning as WarningIcon,
+  Info as InfoIcon
 } from '@mui/icons-material';
 import { keyframes } from '@emotion/react';
-import api from '../services/api';
+import api, { getBaseUrl } from '../services/api';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 // Add spin animation
 const spin = keyframes`
@@ -30,6 +41,32 @@ const spin = keyframes`
   }
 `;
 
+const settings = {
+  dots: true,
+  infinite: true,
+  speed: 500,
+  slidesToShow: 3,
+  slidesToScroll: 1,
+  autoplay: true,
+  autoplaySpeed: 3000,
+  responsive: [
+    {
+      breakpoint: 960,
+      settings: {
+        slidesToShow: 2,
+        slidesToScroll: 1,
+      }
+    },
+    {
+      breakpoint: 600,
+      settings: {
+        slidesToShow: 1,
+        slidesToScroll: 1
+      }
+    }
+  ]
+};
+
 const Wallet = () => {
   const location = useLocation();
   const [balance, setBalance] = useState(0);
@@ -40,9 +77,12 @@ const Wallet = () => {
   const [loading, setLoading] = useState(true); // Start with loading true
   const [refreshing, setRefreshing] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [news, setNews] = useState([]);
+  const [newsLoading, setNewsLoading] = useState(true);
 
   useEffect(() => {
     fetchWalletData(true); // Mark as initial load
+    fetchNews();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Refresh data when location changes (navigation)
@@ -116,6 +156,18 @@ const Wallet = () => {
     }
   };
 
+  const fetchNews = async () => {
+    try {
+      const response = await api.get('/auth/news');
+      setNews(response.data.news || []);
+    } catch (error) {
+      console.error('Failed to fetch news:', error);
+      setNews([]);
+    } finally {
+      setNewsLoading(false);
+    }
+  };
+
   const handleDeposit = async () => {
     setLoading(true);
     setError('');
@@ -143,6 +195,39 @@ const Wallet = () => {
     }
   };
 
+  const getNewsTypeIcon = (type) => {
+    switch (type) {
+      case 'announcement': return <AnnouncementIcon fontSize="small" />;
+      case 'update': return <UpdateIcon fontSize="small" />;
+      case 'maintenance': return <BuildIcon fontSize="small" />;
+      case 'promotion': return <PromotionIcon fontSize="small" />;
+      default: return <CampaignIcon fontSize="small" />;
+    }
+  };
+
+  const getNewsTypeColor = (type) => {
+    switch (type) {
+      case 'announcement': return 'primary.main';
+      case 'update': return 'info.main';
+      case 'maintenance': return 'warning.main';
+      case 'promotion': return 'success.main';
+      default: return 'secondary.main';
+    }
+  };
+
+  const getPriorityIcon = (priority) => {
+    switch (priority) {
+      case 'critical': return <WarningIcon sx={{ fontSize: 16, color: 'error.main' }} />;
+      case 'high': return <HighPriorityIcon sx={{ fontSize: 16, color: 'error.main' }} />;
+      case 'medium': return <InfoIcon sx={{ fontSize: 16, color: 'warning.main' }} />;
+      case 'low': return <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />;
+      default: return null;
+    }
+  };
+
+  const textNews = news.filter(item => !item.videoFile && (!item.videoUrl || (!item.videoUrl.startsWith('/uploads/') && !item.videoUrl.startsWith('http'))));
+  const videoNews = news.filter(item => item.videoFile || (item.videoUrl && (item.videoUrl.startsWith('/uploads/') || item.videoUrl.startsWith('http'))));
+
   return (
     <>
     <Box sx={{
@@ -150,8 +235,123 @@ const Wallet = () => {
         background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
         py: { xs: 2, sm: 3, md: 4 }
       }}>
-        <Container maxWidth={false} disableGutters sx={{ px: 0 }}>
-          {/* Header Section */}
+      <Container maxWidth={false} disableGutters sx={{ px: 0 }}>
+        {/* Latest Announcements Carousel - Top Section */}
+        {!newsLoading && textNews.length > 0 && (
+          <Box sx={{ mb: { xs: 2, sm: 3 }, px: { xs: 2, sm: 3, md: 4 } }}>
+            <Card sx={{
+              background: 'linear-gradient(135deg, #fff 0%, #f8f9fa 100%)',
+              borderRadius: 3,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              border: '1px solid rgba(0,0,0,0.04)',
+              overflow: 'hidden'
+            }}>
+              <CardContent sx={{ p: 0 }}>
+                <Box sx={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  p: { xs: 2, sm: 3 },
+                  color: 'white'
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CampaignIcon />
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Latest Announcements
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ p: { xs: 2, sm: 3 } }}>
+                  <Slider {...settings}>
+                    {textNews.map((item) => (
+                      <Box key={item._id} sx={{ px: 1 }}>
+                        <Card
+                          sx={{
+                            minHeight: 200,
+                            p: 2.5,
+                            borderRadius: 2,
+                            background: 'rgba(102, 126, 234, 0.04)',
+                            border: '1px solid rgba(102, 126, 234, 0.08)',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              background: 'rgba(102, 126, 234, 0.08)',
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                            }
+                          }}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+                            <Avatar sx={{
+                              bgcolor: getNewsTypeColor(item.type),
+                              width: { xs: 40, sm: 48 },
+                              height: { xs: 40, sm: 48 }
+                            }}>
+                              {getNewsTypeIcon(item.type)}
+                            </Avatar>
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, flexWrap: 'wrap' }}>
+                                <Chip
+                                  label={item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+                                  size="small"
+                                  sx={{
+                                    bgcolor: getNewsTypeColor(item.type),
+                                    color: 'white',
+                                    fontSize: '0.7rem',
+                                    fontWeight: 600
+                                  }}
+                                />
+                                <Chip
+                                  label={item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}
+                                  size="small"
+                                  variant="outlined"
+                                  sx={{
+                                    fontSize: '0.7rem',
+                                    fontWeight: 600,
+                                    borderColor:
+                                      item.priority === 'critical' || item.priority === 'high' ? 'error.main' :
+                                      item.priority === 'medium' ? 'warning.main' : 'success.main',
+                                    color:
+                                      item.priority === 'critical' || item.priority === 'high' ? 'error.main' :
+                                      item.priority === 'medium' ? 'warning.main' : 'success.main'
+                                  }}
+                                />
+                              </Box>
+                              <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary', mb: 1 }}>
+                                {item.title}
+                              </Typography>
+                            </Box>
+                          </Box>
+                          <Typography variant="body2" sx={{
+                            color: 'text.secondary',
+                            lineHeight: 1.5,
+                            mb: 1.5,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                          }}>
+                            {item.content}
+                          </Typography>
+                          <Typography variant="caption" sx={{
+                            color: 'text.secondary',
+                            display: 'block',
+                            mt: 'auto'
+                          }}>
+                            {new Date(item.createdAt).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </Typography>
+                        </Card>
+                      </Box>
+                    ))}
+                  </Slider>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        )}
+
+        {/* Header Section */}
           <Box sx={{
             textAlign: 'center',
             mb: { xs: 2, sm: 3, md: 4 },
@@ -594,8 +794,188 @@ const Wallet = () => {
               </Card>
             </Grid>
           </Grid>
+
+        {/* Featured Video Updates - Bottom Section */}
+        {!newsLoading && videoNews.length > 0 && (
+          <Box sx={{ mt: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3, md: 4 } }}>
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 700,
+                mb: 3,
+                textAlign: 'center',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}
+            >
+              Featured Video Updates
+            </Typography>
+            <Grid container spacing={3} sx={{ maxWidth: 1100, mx: 'auto' }}>
+              {videoNews.map((item) => (
+                <Grid item xs={12} sm={6} md={4} key={item._id}>
+                  <Card
+                    sx={{
+                      minHeight: 320,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      borderRadius: 3,
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 12px 32px rgba(0,0,0,0.15)'
+                      }
+                    }}
+                  >
+                    <CardContent sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                        <Chip
+                          label={item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+                          color={
+                            item.type === 'announcement' ? 'primary' :
+                            item.type === 'update' ? 'info' :
+                            item.type === 'maintenance' ? 'warning' :
+                            item.type === 'promotion' ? 'success' : 'default'
+                          }
+                          size="small"
+                          sx={{ fontSize: '0.7rem', fontWeight: 600 }}
+                        />
+                        <Chip
+                          label={item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}
+                          variant="outlined"
+                          size="small"
+                          sx={{
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            borderColor:
+                              item.priority === 'critical' ? 'error.main' :
+                              item.priority === 'high' ? 'error.main' :
+                              item.priority === 'medium' ? 'warning.main' : 'success.main',
+                            color:
+                              item.priority === 'critical' ? 'error.main' :
+                              item.priority === 'high' ? 'error.main' :
+                              item.priority === 'medium' ? 'warning.main' : 'success.main'
+                          }}
+                        />
+                      </Box>
+
+                      <Typography
+                        variant="h6"
+                        component="h3"
+                        sx={{
+                          fontWeight: 600,
+                          mb: 2,
+                          lineHeight: 1.3,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical'
+                        }}
+                      >
+                        {item.title}
+                      </Typography>
+
+                      {/* Video Player */}
+                      <Box sx={{ mb: 2, flexGrow: 1 }}>
+                        {(() => {
+                          const videoSrc = item.videoFile
+                            ? `${getBaseUrl()}${item.videoFile}`
+                            : item.videoUrl.startsWith('/uploads/')
+                              ? `${getBaseUrl()}${item.videoUrl}`
+                              : item.videoUrl;
+                          const isYouTube = videoSrc.includes('youtube.com') || videoSrc.includes('youtu.be');
+                          if (isYouTube) {
+                            const videoId = videoSrc.includes('watch?v=') 
+                              ? videoSrc.split('v=')[1]?.split('&')[0]
+                              : videoSrc.split('youtu.be/')[1]?.split('?')[0];
+                            const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}`;
+                            return (
+                              <iframe
+                                src={embedUrl}
+                                style={{
+                                  width: '100%',
+                                  height: '200px',
+                                  borderRadius: '8px',
+                                  border: 'none'
+                                }}
+                                allow="autoplay; encrypted-media"
+                                allowFullScreen
+                                title={item.title}
+                              ></iframe>
+                            );
+                          } else {
+                            return (
+                              <video
+                                key={videoSrc}
+                                controls
+                                muted
+                                autoPlay
+                                playsInline
+                                loop
+                                style={{
+                                  width: '100%',
+                                  height: '200px',
+                                  borderRadius: '8px',
+                                  objectFit: 'cover',
+                                  display: 'block'
+                                }}
+                                poster={item.videoThumbnail}
+                              >
+                                <source src={videoSrc} type="video/mp4" />
+                                Your browser does not support the video tag.
+                              </video>
+                            );
+                          }
+                        })()}
+                      </Box>
+
+                      {/* Content (if any) */}
+                      {item.content && (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            lineHeight: 1.6,
+                            mb: 2,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical'
+                          }}
+                        >
+                          {item.content}
+                        </Typography>
+                      )}
+
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{
+                          mt: 'auto',
+                          display: 'block',
+                          fontSize: '0.75rem'
+                        }}
+                      >
+                        {new Date(item.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
         </Container>
       </Box>
+
       {/* Add Funds Dialog */}
       <Dialog
         open={dialogOpen}

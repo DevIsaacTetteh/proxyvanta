@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://proxyvanta-backend-1.onrender.com/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://proxyvanta-backend-1.onrender.com/api';
+
+// Get base URL for static files (without /api suffix)
+export const getBaseUrl = () => {
+  return API_BASE_URL.replace('/api', '');
+};
 
 const api = axios.create({
   baseURL: API_BASE_URL,

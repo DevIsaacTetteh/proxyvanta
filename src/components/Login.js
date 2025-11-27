@@ -10,13 +10,10 @@ import {
   IconButton,
   InputAdornment,
   Divider,
-  Zoom,
   Fade,
   useTheme,
   Card,
   CardContent,
-  Avatar,
-  Chip,
   Box
 } from '@mui/material';
 import {
@@ -24,10 +21,8 @@ import {
   VisibilityOff,
   Email,
   Lock,
-  VpnKey,
-  Shield,
-  CheckCircle,
-  Error as ErrorIcon
+  Error as ErrorIcon,
+  Google as GoogleIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -48,6 +43,28 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
+
+  // Handle Google OAuth token from URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const error = urlParams.get('error');
+
+    if (error) {
+      setError('Google authentication failed. Please try again.');
+      // Clean URL
+      window.history.replaceState({}, document.title, '/login');
+      return;
+    }
+
+    if (token) {
+      // Store token and navigate to wallet
+      localStorage.setItem('userToken', token);
+      // Clean URL
+      window.history.replaceState({}, document.title, '/login');
+      navigate('/wallet');
+    }
+  }, [navigate]);
 
   // Handle account lockout
   useEffect(() => {
@@ -113,11 +130,17 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
+  const handleGoogleSignIn = () => {
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://proxyvanta-backend-1.onrender.com/api';
+    const backendUrl = API_BASE_URL.replace('/api', '');
+    window.location.href = `${backendUrl}/api/auth/google`;
+  };
+
   return (
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -126,11 +149,11 @@ const Login = () => {
     >
       <Fade in={true} timeout={500}>
         <Card
-          elevation={8}
+          elevation={4}
           sx={{
-            maxWidth: 400,
+            maxWidth: { xs: 340, sm: 380, md: 400 },
             width: '100%',
-            borderRadius: 3,
+            borderRadius: 2,
             background: 'white',
             position: 'relative',
           }}
@@ -145,55 +168,36 @@ const Login = () => {
             }}
           >
             <Typography
-              variant="h4"
+              variant="h5"
               component="h1"
               sx={{
                 color: 'white',
-                fontWeight: 700,
-                mb: 1,
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                fontWeight: 600,
+                mb: 0.5,
               }}
             >
-              PROXYVANTA
+              ProxyVanta
             </Typography>
             <Typography
-              variant="h6"
+              variant="body2"
               sx={{
                 color: 'rgba(255, 255, 255, 0.9)',
-                fontWeight: 500,
+                fontSize: '0.8rem',
               }}
             >
-              PIA S5 Control
+              Secure Login Portal
             </Typography>
-            <Chip
-              label="SECURE LOGIN"
-              sx={{
-                mt: 2,
-                background: 'rgba(255, 255, 255, 0.2)',
-                color: 'white',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-              }}
-              icon={<Shield sx={{ color: 'white !important' }} />}
-            />
           </Box>
 
-          <CardContent sx={{ p: 3 }}>
+          <CardContent sx={{ p: 2.5 }}>
             <Typography
-              variant="h5"
+              variant="h6"
               component="h2"
               gutterBottom
               align="center"
-              sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 2 }}
+              sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 1.5 }}
             >
               Welcome Back
-            </Typography>
-
-            <Typography
-              variant="body2"
-              align="center"
-              sx={{ color: 'text.secondary', mb: 2 }}
-            >
-              Sign in to access your proxy dashboard
             </Typography>
 
             {error && (
@@ -201,9 +205,10 @@ const Login = () => {
                 severity={isLocked ? "error" : "warning"}
                 sx={{
                   mb: 2,
-                  borderRadius: 2,
+                  borderRadius: 1,
+                  fontSize: '0.875rem',
                   '& .MuiAlert-icon': {
-                    color: isLocked ? theme.palette.error.main : theme.palette.warning.main
+                    fontSize: '1rem'
                   }
                 }}
                 icon={isLocked ? <ErrorIcon /> : undefined}
@@ -222,19 +227,22 @@ const Login = () => {
                 margin="normal"
                 required
                 disabled={isLocked}
+                size="small"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Email color="action" />
+                      <Email color="action" sx={{ fontSize: '1.1rem' }} />
                     </InputAdornment>
                   ),
                 }}
                 sx={{
+                  mb: 1.5,
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    '&:hover fieldset': {
-                      borderColor: theme.palette.primary.main,
-                    },
+                    borderRadius: 1.5,
+                    fontSize: '0.9rem',
+                  },
+                  '& .MuiInputLabel-root': {
+                    fontSize: '0.9rem',
                   },
                 }}
               />
@@ -248,10 +256,11 @@ const Login = () => {
                 margin="normal"
                 required
                 disabled={isLocked}
+                size="small"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock color="action" />
+                      <Lock color="action" sx={{ fontSize: '1.1rem' }} />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -260,18 +269,21 @@ const Login = () => {
                         aria-label="toggle password visibility"
                         onClick={togglePasswordVisibility}
                         edge="end"
+                        size="small"
                       >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                        {showPassword ? <VisibilityOff sx={{ fontSize: '1.1rem' }} /> : <Visibility sx={{ fontSize: '1.1rem' }} />}
                       </IconButton>
                     </InputAdornment>
                   ),
                 }}
                 sx={{
+                  mb: 1.5,
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    '&:hover fieldset': {
-                      borderColor: theme.palette.primary.main,
-                    },
+                    borderRadius: 1.5,
+                    fontSize: '0.9rem',
+                  },
+                  '& .MuiInputLabel-root': {
+                    fontSize: '0.9rem',
                   },
                 }}
               />
@@ -281,8 +293,9 @@ const Login = () => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  mt: 1,
                   mb: 2,
+                  flexWrap: 'wrap',
+                  gap: { xs: 0.5, sm: 0 },
                 }}
               >
                 <FormControlLabel
@@ -292,10 +305,11 @@ const Login = () => {
                       onChange={(e) => setFormData(prev => ({ ...prev, rememberMe: e.target.checked }))}
                       color="primary"
                       disabled={isLocked}
+                      size="small"
                     />
                   }
                   label={
-                    <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
                       Remember me
                     </Typography>
                   }
@@ -303,9 +317,12 @@ const Login = () => {
                 <Link
                   href="#"
                   variant="body2"
+                  onClick={() => navigate('/forgot-password')}
                   sx={{
                     color: theme.palette.primary.main,
                     textDecoration: 'none',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
                     '&:hover': {
                       textDecoration: 'underline',
                     },
@@ -321,16 +338,14 @@ const Login = () => {
                 variant="contained"
                 disabled={loading || isLocked}
                 sx={{
-                  mt: 1,
                   mb: 2,
-                  py: 1.25,
-                  fontSize: '1rem',
+                  py: 1,
+                  fontSize: '0.9rem',
                   fontWeight: 600,
-                  background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
-                  boxShadow: '0 4px 15px rgba(26, 35, 126, 0.3)',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: 1.5,
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #3949ab 0%, #5e35b1 100%)',
-                    boxShadow: '0 6px 20px rgba(26, 35, 126, 0.4)',
+                    background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
                   },
                   '&:disabled': {
                     background: theme.palette.grey[300],
@@ -339,35 +354,48 @@ const Login = () => {
                 }}
               >
                 {loading ? 'Signing In...' : 'Sign In'}
-                {!loading && <CheckCircle sx={{ ml: 1, fontSize: '1.2rem' }} />}
               </Button>
 
-              <Divider sx={{ my: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  or
+              <Divider sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                  OR
                 </Typography>
               </Divider>
 
               <Button
                 fullWidth
-                variant="outlined"
+                variant="contained"
+                onClick={handleGoogleSignIn}
                 disabled={isLocked}
+                startIcon={<GoogleIcon />}
                 sx={{
                   mb: 2,
-                  py: 1.25,
-                  borderColor: theme.palette.grey[300],
-                  color: theme.palette.text.secondary,
+                  py: 1.2,
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  background: 'linear-gradient(135deg, #4285F4 0%, #34A853 50%, #FBBC05 75%, #EA4335 100%)',
+                  backgroundSize: '200% 100%',
+                  color: '#fff',
+                  boxShadow: '0 2px 8px rgba(66, 133, 244, 0.3)',
+                  transition: 'all 0.3s ease',
                   '&:hover': {
-                    borderColor: theme.palette.primary.main,
-                    background: 'rgba(26, 35, 126, 0.04)',
+                    backgroundPosition: '100% 0',
+                    boxShadow: '0 4px 12px rgba(66, 133, 244, 0.4)',
+                    transform: 'translateY(-1px)',
+                  },
+                  '&:disabled': {
+                    background: '#e0e0e0',
+                    color: '#9e9e9e',
                   },
                 }}
               >
-                Continue with Google (Coming Soon)
+                Continue with Google
               </Button>
 
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="body2" color="text.secondary">
+              <Box sx={{ textAlign: 'center', mb: 1 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
                   Don't have an account?{' '}
                   <Button
                     variant="text"
@@ -376,7 +404,7 @@ const Login = () => {
                       color: theme.palette.primary.main,
                       textDecoration: 'none',
                       fontWeight: 600,
-                      fontSize: 'inherit',
+                      fontSize: '0.8rem',
                       textTransform: 'none',
                       p: 0,
                       minWidth: 'auto',
@@ -386,46 +414,10 @@ const Login = () => {
                       },
                     }}
                   >
-                    Create one now
+                    Sign up
                   </Button>
                 </Typography>
               </Box>
-            </Box>
-
-            {/* Forgot Password */}
-            <Box sx={{ textAlign: 'center', mt: 1 }}>
-              <Button
-                variant="text"
-                onClick={() => navigate('/forgot-password')}
-                sx={{
-                  color: theme.palette.primary.main,
-                  textDecoration: 'none',
-                  fontWeight: 500,
-                  fontSize: '0.9rem',
-                  textTransform: 'none',
-                  p: 0,
-                  minWidth: 'auto',
-                  '&:hover': {
-                    textDecoration: 'underline',
-                    backgroundColor: 'transparent',
-                  },
-                }}
-              >
-                Forgot your password?
-              </Button>
-            </Box>
-
-            {/* Security tips */}
-            <Box sx={{ mt: 2, p: 1.5, background: 'rgba(26, 35, 126, 0.04)', borderRadius: 2 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 0.5 }}>
-                🔒 Security Tips:
-              </Typography>
-              <Typography variant="caption" color="text.secondary" component="div">
-                • Never share your login credentials<br/>
-                • Use a strong, unique password<br/>
-                • Enable two-factor authentication when available<br/>
-                • Log out after each session on public devices
-              </Typography>
             </Box>
           </CardContent>
         </Card>

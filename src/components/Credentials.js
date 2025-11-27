@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Typography, Box, Alert, Card, CardContent, Grid, IconButton,
-  InputAdornment, TextField, Chip, Divider, Container, CircularProgress
+  InputAdornment, TextField, Chip, Divider, Container, CircularProgress,
+  Dialog, DialogTitle, DialogContent, DialogActions, Button
 } from '@mui/material';
 import {
   ContentCopy, Visibility, VisibilityOff, Security, AccessTime,
-  CheckCircle, Info
+  CheckCircle, Info, Delete
 } from '@mui/icons-material';
 import api from '../services/api';
 
@@ -15,6 +16,8 @@ const Credentials = () => {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState('');
   const [showPasswords, setShowPasswords] = useState({});
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, orderId: null });
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchOrderHistory();
@@ -43,6 +46,29 @@ const Credentials = () => {
       ...prev,
       [orderId]: !prev[orderId]
     }));
+  };
+
+  const handleDeleteClick = (orderId) => {
+    setDeleteDialog({ open: true, orderId });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteDialog.orderId) return;
+
+    try {
+      setDeleting(true);
+      await api.delete(`/proxy/orders/${deleteDialog.orderId}`);
+      setOrders(prev => prev.filter(order => order.id !== deleteDialog.orderId));
+      setDeleteDialog({ open: false, orderId: null });
+    } catch (err) {
+      setError('Failed to delete credential. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialog({ open: false, orderId: null });
   };
 
   const formatDate = (dateString) => {
@@ -152,6 +178,24 @@ const Credentials = () => {
                     />
                   )}
 
+                  {/* Delete Button */}
+                  <IconButton
+                    onClick={() => handleDeleteClick(order.id)}
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: index === 0 ? 100 : 8,
+                      color: 'error.main',
+                      '&:hover': {
+                        backgroundColor: 'error.light',
+                        color: 'white'
+                      }
+                    }}
+                    size="small"
+                  >
+                    <Delete fontSize="small" />
+                  </IconButton>
+
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       <CheckCircle sx={{ color: 'success.main', mr: 1 }} />
@@ -259,6 +303,34 @@ const Credentials = () => {
             {copied.startsWith('username') ? 'Username' : 'Password'} copied to clipboard!
           </Alert>
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={deleteDialog.open}
+          onClose={handleDeleteCancel}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>Delete Credential</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to delete this proxy credential? This action cannot be undone.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleDeleteCancel} disabled={deleting}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteConfirm}
+              color="error"
+              variant="contained"
+              disabled={deleting}
+            >
+              {deleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Container>
   );

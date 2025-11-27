@@ -47,11 +47,11 @@ const ForgotPassword = () => {
     try {
       const response = await api.post('/auth/forgot-password', { email });
       setEmailSent(true);
-      setMessage(response.data.message);
+      setMessage('Password reset instructions have been sent to your email address.');
 
-      // In development, show the reset token
+      // In development, also show the reset token for testing
       if (response.data.resetToken) {
-        setMessage(`${response.data.message}\n\nReset Token: ${response.data.resetToken}\n\nUse this URL: ${window.location.origin}/reset-password/${response.data.resetToken}`);
+        setMessage(`Password reset instructions have been sent to your email address.\n\nFor testing purposes:\nReset Token: ${response.data.resetToken}\n\nDirect Link: ${window.location.origin}/reset-password/${response.data.resetToken}`);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to send reset email. Please try again.');

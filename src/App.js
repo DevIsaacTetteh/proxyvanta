@@ -11,8 +11,10 @@ import Wallet from './components/Wallet';
 import Purchase from './components/Purchase';
 import Credentials from './components/Credentials';
 import OrderHistory from './components/OrderHistory';
-import PaymentVerification from './components/PaymentVerification';
 import FloatingSupportButton from './components/FloatingSupportButton';
+import NavigationGuide from './components/NavigationGuide';
+import Dashboard from './components/Dashboard';
+import PaymentVerification from './components/PaymentVerification';
 import {
   AppBar,
   Toolbar,
@@ -41,7 +43,8 @@ import {
   LocationOn as LocationIcon,
   Facebook as FacebookIcon,
   Twitter as TwitterIcon,
-  LinkedIn as LinkedInIcon
+  LinkedIn as LinkedInIcon,
+  Help as HelpIcon
 } from '@mui/icons-material';
 
 const theme = createTheme({
@@ -429,6 +432,7 @@ const Layout = ({ children }) => {
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [supportOpen, setSupportOpen] = React.useState(false);
+  const [guideOpen, setGuideOpen] = React.useState(false);
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -449,6 +453,14 @@ const Layout = ({ children }) => {
 
   const handleSupportClose = () => {
     setSupportOpen(false);
+  };
+
+  const handleGuideOpen = () => {
+    setGuideOpen(true);
+  };
+
+  const handleGuideClose = () => {
+    setGuideOpen(false);
   };
 
   const menuItems = [
@@ -555,6 +567,24 @@ const Layout = ({ children }) => {
                   {item.text}
                 </Button>
               ))}
+              <Button
+                color="inherit"
+                onClick={handleGuideOpen}
+                startIcon={<HelpIcon />}
+                sx={{
+                  mr: 0.5,
+                  fontSize: { xs: '0.8rem', sm: '0.85rem', md: '0.9rem' },
+                  px: { xs: 1.5, sm: 2, md: 2.5 },
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.15)',
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  }
+                }}
+              >
+                Help
+              </Button>
             </Box>
           )}
 
@@ -661,6 +691,28 @@ const Layout = ({ children }) => {
                     </MenuItem>
                   ))}
                   <MenuItem
+                    onClick={() => {
+                      handleClose();
+                      handleGuideOpen();
+                    }}
+                    sx={{
+                      py: 1.5,
+                      px: 2,
+                      '&:hover': {
+                        backgroundColor: 'rgba(26, 35, 126, 0.08)',
+                      }
+                    }}
+                  >
+                    <HelpIcon sx={{ mr: 2, fontSize: 20, color: 'primary.main' }} />
+                    <Typography sx={{
+                      ml: 0,
+                      fontWeight: 500,
+                      fontSize: '0.9rem'
+                    }}>
+                      Help & Guide
+                    </Typography>
+                  </MenuItem>
+                  <MenuItem
                     onClick={handleLogout}
                     sx={{
                       py: 1.5,
@@ -720,6 +772,11 @@ const Layout = ({ children }) => {
         onOpen={handleSupportOpen} 
         onClose={handleSupportClose} 
       />
+
+      <NavigationGuide
+        open={guideOpen}
+        onClose={handleGuideClose}
+      />
     </Box>
   );
 };
@@ -760,7 +817,12 @@ function App() {
                 <Layout><PaymentVerification /></Layout>
               </ProtectedRoute>
             } />
-            <Route path="/" element={<Navigate to="/login" />} />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Layout><Dashboard /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/" element={<Navigate to="/dashboard" />} />
           </Routes>
         </Router>
       </AuthProvider>

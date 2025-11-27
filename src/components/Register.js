@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   TextField,
   Button,
   Typography,
-  Avatar,
   Box,
   Alert,
   Checkbox,
@@ -16,7 +15,6 @@ import {
   useTheme,
   Card,
   CardContent,
-  Chip,
   LinearProgress
 } from '@mui/material';
 import {
@@ -24,11 +22,9 @@ import {
   VisibilityOff,
   Email,
   Lock,
-  PersonAdd,
-  Shield,
   CheckCircle,
   Error as ErrorIcon,
-  Info
+  Google as GoogleIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -52,6 +48,28 @@ const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
+
+  // Handle Google OAuth token from URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const error = urlParams.get('error');
+
+    if (error) {
+      setError('Google authentication failed. Please try again.');
+      // Clean URL
+      window.history.replaceState({}, document.title, '/register');
+      return;
+    }
+
+    if (token) {
+      // Store token and navigate to wallet
+      localStorage.setItem('userToken', token);
+      // Clean URL
+      window.history.replaceState({}, document.title, '/register');
+      navigate('/wallet');
+    }
+  }, [navigate]);
 
   // Password strength calculation
   const calculatePasswordStrength = (password) => {
@@ -157,172 +175,107 @@ const Register = () => {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
+  const handleGoogleSignUp = () => {
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://proxyvanta-backend-1.onrender.com/api';
+    const backendUrl = API_BASE_URL.replace('/api', '');
+    window.location.href = `${backendUrl}/api/auth/google`;
+  };
+
   return (
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         p: 2,
-        position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-          opacity: 0.1,
-        }
       }}
     >
-      {/* Background decorative elements */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '15%',
-          left: '15%',
-          width: '180px',
-          height: '180px',
-          borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.1)',
-          filter: 'blur(35px)',
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: '15%',
-          right: '15%',
-          width: '120px',
-          height: '120px',
-          borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.1)',
-          filter: 'blur(25px)',
-        }}
-      />
-
       <Zoom in={true} timeout={600}>
         <Card
-          elevation={24}
+          elevation={4}
           sx={{
-            maxWidth: 450,
+            maxWidth: { xs: 340, sm: 380, md: 400 },
             width: '100%',
-            borderRadius: 4,
-            backdropFilter: 'blur(20px)',
-            background: 'rgba(255, 255, 255, 0.95)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: 2,
+            background: 'white',
             position: 'relative',
-            overflow: 'visible',
           }}
         >
-          {/* Header with branding */}
+          {/* Header */}
           <Box
             sx={{
-              background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 50%, #5e35b1 100%)',
-              p: 3,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              p: 2,
               textAlign: 'center',
-              borderRadius: '4px 4px 0 0',
-              position: 'relative',
+              color: 'white',
             }}
           >
-            <Avatar
-              sx={{
-                width: 60,
-                height: 60,
-                mx: 'auto',
-                mb: 2,
-                background: 'rgba(255, 255, 255, 0.2)',
-                backdropFilter: 'blur(10px)',
-              }}
-            >
-              <PersonAdd sx={{ fontSize: 30, color: 'white' }} />
-            </Avatar>
             <Typography
-              variant="h4"
+              variant="h5"
               component="h1"
               sx={{
                 color: 'white',
-                fontWeight: 700,
-                mb: 1,
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                fontWeight: 600,
+                mb: 0.5,
               }}
             >
-              PROXYVANTA
+              ProxyVanta
             </Typography>
             <Typography
-              variant="h6"
+              variant="body2"
               sx={{
                 color: 'rgba(255, 255, 255, 0.9)',
-                fontWeight: 500,
+                fontSize: '0.8rem',
               }}
-            >
-              Join PIA S5 Control
-            </Typography>
-            <Chip
-              label="CREATE ACCOUNT"
-              sx={{
-                mt: 2,
-                background: 'rgba(255, 255, 255, 0.2)',
-                color: 'white',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-              }}
-              icon={<Shield sx={{ color: 'white !important' }} />}
-            />
-          </Box>
-
-          <CardContent sx={{ p: 3 }}>
-            <Typography
-              variant="h5"
-              component="h2"
-              gutterBottom
-              align="center"
-              sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 2 }}
             >
               Create Your Account
             </Typography>
+          </Box>
 
+          <CardContent sx={{ p: 2.5 }}>
             <Typography
-              variant="body2"
+              variant="h6"
+              component="h2"
+              gutterBottom
               align="center"
-              sx={{ color: 'text.secondary', mb: 2 }}
+              sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 1.5 }}
             >
-              Get started with secure proxy management
+              Join ProxyVanta
             </Typography>
-
-            {message && (
-              <Alert
-                severity="success"
-                sx={{
-                  mb: 2,
-                  borderRadius: 2,
-                  '& .MuiAlert-icon': {
-                    color: theme.palette.success.main
-                  }
-                }}
-                icon={<CheckCircle />}
-              >
-                {message}
-              </Alert>
-            )}
 
             {error && (
               <Alert
                 severity="error"
                 sx={{
                   mb: 2,
-                  borderRadius: 2,
+                  borderRadius: 1,
+                  fontSize: '0.875rem',
                   '& .MuiAlert-icon': {
-                    color: theme.palette.error.main
+                    fontSize: '1rem'
                   }
                 }}
                 icon={<ErrorIcon />}
               >
                 {error}
+              </Alert>
+            )}
+
+            {message && (
+              <Alert
+                severity="success"
+                sx={{
+                  mb: 2,
+                  borderRadius: 1,
+                  fontSize: '0.875rem',
+                  '& .MuiAlert-icon': {
+                    fontSize: '1rem'
+                  }
+                }}
+                icon={<CheckCircle />}
+              >
+                {message}
               </Alert>
             )}
 
@@ -335,22 +288,24 @@ const Register = () => {
                 onChange={handleInputChange('email')}
                 margin="normal"
                 required
+                size="small"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Email color="action" />
+                      <Email color="action" sx={{ fontSize: '1.1rem' }} />
                     </InputAdornment>
                   ),
                 }}
                 sx={{
+                  mb: 1.5,
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    '&:hover fieldset': {
-                      borderColor: theme.palette.primary.main,
-                    },
+                    borderRadius: 1.5,
+                    fontSize: '0.9rem',
+                  },
+                  '& .MuiInputLabel-root': {
+                    fontSize: '0.9rem',
                   },
                 }}
-                helperText="We'll send important updates to this email"
               />
 
               <TextField
@@ -361,10 +316,11 @@ const Register = () => {
                 onChange={handleInputChange('password')}
                 margin="normal"
                 required
+                size="small"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock color="action" />
+                      <Lock color="action" sx={{ fontSize: '1.1rem' }} />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -373,33 +329,38 @@ const Register = () => {
                         aria-label="toggle password visibility"
                         onClick={togglePasswordVisibility}
                         edge="end"
+                        size="small"
                       >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                        {showPassword ? <VisibilityOff sx={{ fontSize: '1.1rem' }} /> : <Visibility sx={{ fontSize: '1.1rem' }} />}
                       </IconButton>
                     </InputAdornment>
                   ),
                 }}
                 sx={{
+                  mb: 1,
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    '&:hover fieldset': {
-                      borderColor: theme.palette.primary.main,
-                    },
+                    borderRadius: 1.5,
+                    fontSize: '0.9rem',
+                  },
+                  '& .MuiInputLabel-root': {
+                    fontSize: '0.9rem',
                   },
                 }}
               />
 
+              {/* Password Strength Indicator */}
               {formData.password && (
-                <Box sx={{ mt: 1, mb: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                    <Typography variant="caption" color="text.secondary">
+                <Box sx={{ mb: 1.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                    <Typography variant="caption" sx={{ flex: 1, fontSize: '0.75rem' }}>
                       Password Strength:
                     </Typography>
                     <Typography
                       variant="caption"
                       sx={{
-                        color: `${getPasswordStrengthColor()}.main`,
-                        fontWeight: 600
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        color: theme.palette[getPasswordStrengthColor()].main
                       }}
                     >
                       {getPasswordStrengthText()}
@@ -408,17 +369,20 @@ const Register = () => {
                   <LinearProgress
                     variant="determinate"
                     value={passwordStrength}
-                    color={getPasswordStrengthColor()}
-                    sx={{ height: 6, borderRadius: 3 }}
+                    sx={{
+                      height: 4,
+                      borderRadius: 2,
+                      backgroundColor: theme.palette.grey[200],
+                      '& .MuiLinearProgress-bar': {
+                        backgroundColor: theme.palette[getPasswordStrengthColor()].main,
+                        borderRadius: 2,
+                      },
+                    }}
                   />
                   {passwordFeedback.length > 0 && (
-                    <Box sx={{ mt: 1 }}>
-                      {passwordFeedback.map((feedback, index) => (
-                        <Typography key={index} variant="caption" color="text.secondary" component="div">
-                          • {feedback}
-                        </Typography>
-                      ))}
-                    </Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', mt: 0.5 }}>
+                      {passwordFeedback.join(', ')}
+                    </Typography>
                   )}
                 </Box>
               )}
@@ -431,16 +395,11 @@ const Register = () => {
                 onChange={handleInputChange('confirmPassword')}
                 margin="normal"
                 required
-                error={formData.confirmPassword && formData.password !== formData.confirmPassword}
-                helperText={
-                  formData.confirmPassword && formData.password !== formData.confirmPassword
-                    ? 'Passwords do not match'
-                    : ''
-                }
+                size="small"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock color="action" />
+                      <Lock color="action" sx={{ fontSize: '1.1rem' }} />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -449,36 +408,39 @@ const Register = () => {
                         aria-label="toggle confirm password visibility"
                         onClick={toggleConfirmPasswordVisibility}
                         edge="end"
+                        size="small"
                       >
-                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                        {showConfirmPassword ? <VisibilityOff sx={{ fontSize: '1.1rem' }} /> : <Visibility sx={{ fontSize: '1.1rem' }} />}
                       </IconButton>
                     </InputAdornment>
                   ),
                 }}
                 sx={{
+                  mb: 1.5,
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    '&:hover fieldset': {
-                      borderColor: theme.palette.primary.main,
-                    },
+                    borderRadius: 1.5,
+                    fontSize: '0.9rem',
+                  },
+                  '& .MuiInputLabel-root': {
+                    fontSize: '0.9rem',
                   },
                 }}
               />
 
-              <Box sx={{ mt: 2, mb: 1 }}>
+              <Box sx={{ mb: 2 }}>
                 <FormControlLabel
                   control={
                     <Checkbox
                       checked={formData.acceptTerms}
                       onChange={(e) => setFormData(prev => ({ ...prev, acceptTerms: e.target.checked }))}
                       color="primary"
-                      required
+                      size="small"
                     />
                   }
                   label={
-                    <Typography variant="body2">
-                      I agree to the{' '}
-                      <Link href="#" sx={{ color: theme.palette.primary.main }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                      I accept the{' '}
+                      <Link href="#" sx={{ color: theme.palette.primary.main, textDecoration: 'none' }}>
                         Terms of Service
                       </Link>
                     </Typography>
@@ -490,13 +452,13 @@ const Register = () => {
                       checked={formData.acceptPrivacy}
                       onChange={(e) => setFormData(prev => ({ ...prev, acceptPrivacy: e.target.checked }))}
                       color="primary"
-                      required
+                      size="small"
                     />
                   }
                   label={
-                    <Typography variant="body2">
-                      I agree to the{' '}
-                      <Link href="#" sx={{ color: theme.palette.primary.main }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                      I accept the{' '}
+                      <Link href="#" sx={{ color: theme.palette.primary.main, textDecoration: 'none' }}>
                         Privacy Policy
                       </Link>
                     </Typography>
@@ -508,18 +470,16 @@ const Register = () => {
                 type="submit"
                 fullWidth
                 variant="contained"
-                disabled={loading || !formData.acceptTerms || !formData.acceptPrivacy}
+                disabled={loading}
                 sx={{
-                  mt: 1,
                   mb: 2,
-                  py: 1.25,
-                  fontSize: '1rem',
+                  py: 1,
+                  fontSize: '0.9rem',
                   fontWeight: 600,
-                  background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
-                  boxShadow: '0 4px 15px rgba(26, 35, 126, 0.3)',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: 1.5,
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #3949ab 0%, #5e35b1 100%)',
-                    boxShadow: '0 6px 20px rgba(26, 35, 126, 0.4)',
+                    background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
                   },
                   '&:disabled': {
                     background: theme.palette.grey[300],
@@ -528,80 +488,64 @@ const Register = () => {
                 }}
               >
                 {loading ? 'Creating Account...' : 'Create Account'}
-                {!loading && <PersonAdd sx={{ ml: 1, fontSize: '1.2rem' }} />}
               </Button>
 
-              <Divider sx={{ my: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  or
+              <Divider sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                  OR
                 </Typography>
               </Divider>
 
               <Button
                 fullWidth
-                variant="outlined"
-                disabled={loading}
+                variant="contained"
+                onClick={handleGoogleSignUp}
+                startIcon={<GoogleIcon />}
                 sx={{
                   mb: 2,
-                  py: 1.25,
-                  borderColor: theme.palette.grey[300],
-                  color: theme.palette.text.secondary,
+                  py: 1.2,
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  background: 'linear-gradient(135deg, #4285F4 0%, #34A853 50%, #FBBC05 75%, #EA4335 100%)',
+                  backgroundSize: '200% 100%',
+                  color: '#fff',
+                  boxShadow: '0 2px 8px rgba(66, 133, 244, 0.3)',
+                  transition: 'all 0.3s ease',
                   '&:hover': {
-                    borderColor: theme.palette.primary.main,
-                    background: 'rgba(26, 35, 126, 0.04)',
+                    backgroundPosition: '100% 0',
+                    boxShadow: '0 4px 12px rgba(66, 133, 244, 0.4)',
+                    transform: 'translateY(-1px)',
                   },
                 }}
               >
-                Continue with Google (Coming Soon)
+                Continue with Google
               </Button>
 
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
                   Already have an account?{' '}
-                  <Link
-                    component="button"
-                    variant="body2"
+                  <Button
+                    variant="text"
                     onClick={() => navigate('/login')}
                     sx={{
                       color: theme.palette.primary.main,
                       textDecoration: 'none',
                       fontWeight: 600,
+                      fontSize: '0.8rem',
+                      textTransform: 'none',
+                      p: 0,
+                      minWidth: 'auto',
                       '&:hover': {
                         textDecoration: 'underline',
+                        backgroundColor: 'transparent',
                       },
                     }}
                   >
-                    Sign in here
-                  </Link>
+                    Sign in
+                  </Button>
                 </Typography>
-              </Box>
-            </Box>
-
-            {/* Security tips */}
-            <Box sx={{ mt: 2, p: 1.5, background: 'rgba(26, 35, 126, 0.04)', borderRadius: 2 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 0.5 }}>
-                🛡️ Account Security:
-              </Typography>
-              <Typography variant="caption" color="text.secondary" component="div">
-                • Use a unique password for your account<br/>
-                • Enable two-factor authentication when available<br/>
-                • Never share your credentials with anyone<br/>
-                • Regularly update your password
-              </Typography>
-            </Box>
-
-            {/* Info box */}
-            <Box sx={{ mt: 1, p: 1.5, background: 'rgba(255, 152, 0, 0.1)', borderRadius: 2, border: '1px solid rgba(255, 152, 0, 0.2)' }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                <Info sx={{ color: theme.palette.warning.main, mr: 1, mt: 0.5, fontSize: '1rem' }} />
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.warning.main, mb: 0.5 }}>
-                    What happens next?
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    After registration, you'll receive a confirmation email. You can then fund your wallet and start purchasing proxies immediately.
-                  </Typography>
-                </Box>
               </Box>
             </Box>
           </CardContent>
