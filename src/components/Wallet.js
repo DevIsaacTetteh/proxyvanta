@@ -20,10 +20,7 @@ import {
   Announcement as AnnouncementIcon,
   Update as UpdateIcon,
   Build as BuildIcon,
-  LocalOffer as PromotionIcon,
-  PriorityHigh as HighPriorityIcon,
-  Warning as WarningIcon,
-  Info as InfoIcon
+  LocalOffer as PromotionIcon
 } from '@mui/icons-material';
 import { keyframes } from '@emotion/react';
 import api, { getBaseUrl } from '../services/api';
@@ -51,14 +48,14 @@ const settings = {
   autoplaySpeed: 3000,
   responsive: [
     {
-      breakpoint: 960,
+      breakpoint: 960, // Medium screens (tablet)
       settings: {
         slidesToShow: 2,
         slidesToScroll: 1,
       }
     },
     {
-      breakpoint: 600,
+      breakpoint: 600, // Small screens (mobile)
       settings: {
         slidesToShow: 1,
         slidesToScroll: 1
@@ -215,16 +212,6 @@ const Wallet = () => {
     }
   };
 
-  const getPriorityIcon = (priority) => {
-    switch (priority) {
-      case 'critical': return <WarningIcon sx={{ fontSize: 16, color: 'error.main' }} />;
-      case 'high': return <HighPriorityIcon sx={{ fontSize: 16, color: 'error.main' }} />;
-      case 'medium': return <InfoIcon sx={{ fontSize: 16, color: 'warning.main' }} />;
-      case 'low': return <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />;
-      default: return null;
-    }
-  };
-
   const textNews = news.filter(item => !item.videoFile && (!item.videoUrl || (!item.videoUrl.startsWith('/uploads/') && !item.videoUrl.startsWith('http'))));
   const videoNews = news.filter(item => item.videoFile || (item.videoUrl && (item.videoUrl.startsWith('/uploads/') || item.videoUrl.startsWith('http'))));
 
@@ -265,12 +252,14 @@ const Wallet = () => {
                       <Box key={item._id} sx={{ px: 1 }}>
                         <Card
                           sx={{
-                            minHeight: 200,
+                            height: { xs: 140, sm: 160, md: 175 },
                             p: 2.5,
                             borderRadius: 2,
                             background: 'rgba(102, 126, 234, 0.04)',
                             border: '1px solid rgba(102, 126, 234, 0.08)',
                             transition: 'all 0.2s ease',
+                            display: 'flex',
+                            flexDirection: 'column',
                             '&:hover': {
                               background: 'rgba(102, 126, 234, 0.08)',
                               transform: 'translateY(-2px)',
