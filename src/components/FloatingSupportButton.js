@@ -16,7 +16,7 @@ import SupportChat from './SupportChat';
 
 const FloatingSupportButton = ({ open, onOpen, onClose }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <>

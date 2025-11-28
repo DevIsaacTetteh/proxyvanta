@@ -428,7 +428,7 @@ const Footer = ({ onSupportClick }) => {
 const Layout = ({ children }) => {
   const { logout, user } = useAuth();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [supportOpen, setSupportOpen] = React.useState(false);
