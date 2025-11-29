@@ -196,6 +196,32 @@ const Dashboard = () => {
         </Box>
       </Box>
 
+      {/* SEO Content Section */}
+      <Box sx={{ mb: { xs: 3, sm: 4, md: 5 } }}>
+        <Typography
+          variant="h5"
+          component="h2"
+          sx={{
+            fontWeight: 700,
+            mb: 3,
+            color: 'primary.main'
+          }}
+        >
+          About ProxyVanta
+        </Typography>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.7 }}>
+            ProxyVanta is Ghana's leading provider of premium SOCKS5 proxies, designed to deliver high-speed, secure, and anonymous internet access for users across the country. Whether you're a developer, marketer, or business professional, our residential SOCKS5 proxies ensure seamless browsing, data scraping, and online activities without compromising your privacy. With a focus on reliability and performance, ProxyVanta offers SOCKS5 proxy Ghana solutions that integrate perfectly with popular tools like the PIA Control App, making it easy to manage your proxy connections on the go.
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.7 }}>
+            Buy proxy services from ProxyVanta and enjoy instant activation after payment through convenient methods like MTN MoMo, Telecel Cash, debit cards, or bank transfers. Our premium SOCKS5 proxies are optimized for speed and stability, providing 24/7 uptime and fast delivery to get you connected in minutes. Experience the difference with residential proxies that work flawlessly with PIA SOCKS5 configurations, ensuring your online presence remains secure and undetectable.
+          </Typography>
+          <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
+            At ProxyVanta, we prioritize customer satisfaction with instant access to your purchased proxies right after payment confirmation. Our SOCKS5 proxy Ghana offerings include dedicated support for PIA login and control, making it simple to switch IPs and maintain anonymity. Choose ProxyVanta for reliable, affordable proxy solutions that power your digital needs—fast, secure, and always available.
+          </Typography>
+        </Box>
+      </Box>
+
       {/* Stats Cards */}
       <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 3, sm: 4, md: 5 } }}>
         {stats.map((stat, index) => (

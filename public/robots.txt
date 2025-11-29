@@ -1,3 +1,16 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+
+Sitemap: https://proxyvanta.xyz/sitemap.xml
+
+# Block access to admin areas if any
+Disallow: /admin/
+Disallow: /api/
+
+# Allow crawling of main content
+Allow: /login
+Allow: /register
+Allow: /pricing
+Allow: /support
+Allow: /news
