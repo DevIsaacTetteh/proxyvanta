@@ -42,26 +42,10 @@ const settings = {
   dots: true,
   infinite: true,
   speed: 500,
-  slidesToShow: 3,
+  slidesToShow: 1,
   slidesToScroll: 1,
   autoplay: true,
-  autoplaySpeed: 3000,
-  responsive: [
-    {
-      breakpoint: 960, // Medium screens (tablet)
-      settings: {
-        slidesToShow: 2,
-        slidesToScroll: 1,
-      }
-    },
-    {
-      breakpoint: 600, // Small screens (mobile)
-      settings: {
-        slidesToShow: 1,
-        slidesToScroll: 1
-      }
-    }
-  ]
+  autoplaySpeed: 3000
 };
 
 const Wallet = () => {
@@ -156,7 +140,9 @@ const Wallet = () => {
   const fetchNews = async () => {
     try {
       const response = await api.get('/auth/news');
-      setNews(response.data.news || []);
+      const newsData = response.data?.news || [];
+      console.log('Fetched news:', newsData);
+      setNews(Array.isArray(newsData) ? newsData : []);
     } catch (error) {
       console.error('Failed to fetch news:', error);
       setNews([]);
@@ -212,8 +198,8 @@ const Wallet = () => {
     }
   };
 
-  const textNews = news.filter(item => !item.videoFile && (!item.videoUrl || (!item.videoUrl.startsWith('/uploads/') && !item.videoUrl.startsWith('http'))));
-  const videoNews = news.filter(item => item.videoFile || (item.videoUrl && (item.videoUrl.startsWith('/uploads/') || item.videoUrl.startsWith('http'))));
+  const textNews = (news || []).filter(item => !item.videoFile && (!item.videoUrl || (!item.videoUrl.startsWith('/uploads/') && !item.videoUrl.startsWith('http'))));
+  const videoNews = (news || []).filter(item => item.videoFile || (item.videoUrl && (item.videoUrl.startsWith('/uploads/') || item.videoUrl.startsWith('http'))));
 
   return (
     <>
@@ -224,7 +210,7 @@ const Wallet = () => {
       }}>
       <Container maxWidth={false} disableGutters sx={{ px: 0 }}>
         {/* Latest Announcements Carousel - Top Section */}
-        {!newsLoading && textNews.length > 0 && (
+        {!newsLoading && Array.isArray(news) && textNews.length > 0 && (
           <Box sx={{ mb: { xs: 2, sm: 3 }, px: { xs: 2, sm: 3, md: 4 } }}>
             <Card sx={{
               background: 'linear-gradient(135deg, #fff 0%, #f8f9fa 100%)',
@@ -252,7 +238,7 @@ const Wallet = () => {
                       <Box key={item._id} sx={{ px: 1 }}>
                         <Card
                           sx={{
-                            height: { xs: 140, sm: 160, md: 175 },
+                            height: { xs: 160, sm: 180, md: 200 },
                             p: 2.5,
                             borderRadius: 2,
                             background: 'rgba(102, 126, 234, 0.04)',
@@ -313,7 +299,7 @@ const Wallet = () => {
                             lineHeight: 1.5,
                             mb: 1.5,
                             display: '-webkit-box',
-                            WebkitLineClamp: 2,
+                            WebkitLineClamp: 3,
                             WebkitBoxOrient: 'vertical',
                             overflow: 'hidden'
                           }}>

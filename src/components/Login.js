@@ -140,62 +140,106 @@ const Login = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        p: 2,
+        p: { xs: 0, sm: 2 },
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+          opacity: 0.1,
+        },
       }}
     >
       <Fade in={true} timeout={500}>
         <Card
-          elevation={4}
+          elevation={0}
           sx={{
-            maxWidth: { xs: 340, sm: 380, md: 400 },
+            maxWidth: { xs: '100%', sm: 380, md: 400 },
             width: '100%',
-            borderRadius: 2,
-            background: 'white',
+            height: { xs: '100vh', sm: 'auto' },
+            borderRadius: { xs: 0, sm: 2 },
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
             position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: { xs: 'none', sm: '0 8px 32px rgba(0,0,0,0.1)' },
           }}
         >
           {/* Header */}
           <Box
             sx={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              p: 2,
+              background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
+              p: { xs: 3, sm: 2 },
               textAlign: 'center',
               color: 'white',
+              position: 'relative',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'url("data:image/svg+xml,%3Csvg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Cpath d="M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z"/%3E%3C/g%3E%3C/svg%3E")',
+                opacity: 0.3,
+              },
             }}
           >
             <Typography
-              variant="h5"
+              variant="h4"
               component="h1"
               sx={{
                 color: 'white',
-                fontWeight: 600,
-                mb: 0.5,
+                fontWeight: 700,
+                mb: 1,
+                fontSize: { xs: '1.75rem', sm: '1.5rem' },
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
               }}
             >
               ProxyVanta
             </Typography>
             <Typography
-              variant="body2"
+              variant="body1"
               sx={{
                 color: 'rgba(255, 255, 255, 0.9)',
-                fontSize: '0.8rem',
+                fontSize: { xs: '0.9rem', sm: '0.8rem' },
+                fontWeight: 500,
               }}
             >
               Secure Login Portal
             </Typography>
           </Box>
 
-          <CardContent sx={{ p: 2.5 }}>
+          <CardContent 
+            sx={{ 
+              p: { xs: 3, sm: 2.5 }, 
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              overflowY: { xs: 'auto', sm: 'visible' },
+            }}
+          >
             <Typography
-              variant="h6"
+              variant="h5"
               component="h2"
               gutterBottom
               align="center"
-              sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 1.5 }}
+              sx={{ 
+                fontWeight: 600, 
+                color: theme.palette.primary.main, 
+                mb: { xs: 3, sm: 1.5 },
+                fontSize: { xs: '1.25rem', sm: '1.125rem' },
+              }}
             >
               Welcome Back
             </Typography>
@@ -217,32 +261,50 @@ const Login = () => {
               </Alert>
             )}
 
-            <Box component="form" onSubmit={handleSubmit} noValidate>
+            <Box 
+              component="form" 
+              onSubmit={handleSubmit} 
+              noValidate
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: { xs: 2, sm: 1.5 },
+              }}
+            >
               <TextField
                 fullWidth
                 label="Email Address"
                 type="email"
                 value={formData.email}
                 onChange={handleInputChange('email')}
-                margin="normal"
+                margin="none"
                 required
                 disabled={isLocked}
-                size="small"
+                size="medium"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Email color="action" sx={{ fontSize: '1.1rem' }} />
+                      <Email color="action" sx={{ fontSize: { xs: '1.25rem', sm: '1.1rem' } }} />
                     </InputAdornment>
                   ),
                 }}
                 sx={{
-                  mb: 1.5,
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: 1.5,
-                    fontSize: '0.9rem',
+                    borderRadius: 2,
+                    fontSize: { xs: '1rem', sm: '0.9rem' },
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: 'white',
+                      boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)',
+                    },
                   },
                   '& .MuiInputLabel-root': {
-                    fontSize: '0.9rem',
+                    fontSize: { xs: '1rem', sm: '0.9rem' },
+                    fontWeight: 500,
                   },
                 }}
               />
@@ -253,14 +315,14 @@ const Login = () => {
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}
                 onChange={handleInputChange('password')}
-                margin="normal"
+                margin="none"
                 required
                 disabled={isLocked}
-                size="small"
+                size="medium"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock color="action" sx={{ fontSize: '1.1rem' }} />
+                      <Lock color="action" sx={{ fontSize: { xs: '1.25rem', sm: '1.1rem' } }} />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -269,21 +331,30 @@ const Login = () => {
                         aria-label="toggle password visibility"
                         onClick={togglePasswordVisibility}
                         edge="end"
-                        size="small"
+                        size="medium"
                       >
-                        {showPassword ? <VisibilityOff sx={{ fontSize: '1.1rem' }} /> : <Visibility sx={{ fontSize: '1.1rem' }} />}
+                        {showPassword ? <VisibilityOff sx={{ fontSize: { xs: '1.25rem', sm: '1.1rem' } }} /> : <Visibility sx={{ fontSize: { xs: '1.25rem', sm: '1.1rem' } }} />}
                       </IconButton>
                     </InputAdornment>
                   ),
                 }}
                 sx={{
-                  mb: 1.5,
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: 1.5,
-                    fontSize: '0.9rem',
+                    borderRadius: 2,
+                    fontSize: { xs: '1rem', sm: '0.9rem' },
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: 'white',
+                      boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)',
+                    },
                   },
                   '& .MuiInputLabel-root': {
-                    fontSize: '0.9rem',
+                    fontSize: { xs: '1rem', sm: '0.9rem' },
+                    fontWeight: 500,
                   },
                 }}
               />
@@ -293,9 +364,8 @@ const Login = () => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  mb: 2,
                   flexWrap: 'wrap',
-                  gap: { xs: 0.5, sm: 0 },
+                  gap: { xs: 1, sm: 0 },
                 }}
               >
                 <FormControlLabel
@@ -305,11 +375,11 @@ const Login = () => {
                       onChange={(e) => setFormData(prev => ({ ...prev, rememberMe: e.target.checked }))}
                       color="primary"
                       disabled={isLocked}
-                      size="small"
+                      size="medium"
                     />
                   }
                   label={
-                    <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                    <Typography variant="body2" sx={{ fontSize: { xs: '0.9rem', sm: '0.8rem' }, fontWeight: 500 }}>
                       Remember me
                     </Typography>
                   }
@@ -321,7 +391,8 @@ const Login = () => {
                   sx={{
                     color: theme.palette.primary.main,
                     textDecoration: 'none',
-                    fontSize: '0.8rem',
+                    fontSize: { xs: '0.9rem', sm: '0.8rem' },
+                    fontWeight: 600,
                     cursor: 'pointer',
                     '&:hover': {
                       textDecoration: 'underline',
@@ -338,26 +409,31 @@ const Login = () => {
                 variant="contained"
                 disabled={loading || isLocked}
                 sx={{
-                  mb: 2,
-                  py: 1,
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  borderRadius: 1.5,
+                  py: { xs: 1.5, sm: 1 },
+                  fontSize: { xs: '1rem', sm: '0.9rem' },
+                  fontWeight: 700,
+                  background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  boxShadow: '0 4px 12px rgba(26, 35, 126, 0.3)',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                    background: 'linear-gradient(135deg, #0d1b5e 0%, #283593 100%)',
+                    boxShadow: '0 6px 20px rgba(26, 35, 126, 0.4)',
+                    transform: 'translateY(-1px)',
                   },
                   '&:disabled': {
                     background: theme.palette.grey[300],
                     color: theme.palette.grey[500],
+                    boxShadow: 'none',
                   },
+                  transition: 'all 0.3s ease',
                 }}
               >
                 {loading ? 'Signing In...' : 'Sign In'}
               </Button>
 
-              <Divider sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+              <Divider sx={{ my: { xs: 3, sm: 2 } }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8rem', sm: '0.75rem' }, fontWeight: 500 }}>
                   OR
                 </Typography>
               </Divider>
@@ -369,9 +445,8 @@ const Login = () => {
                 disabled={isLocked}
                 startIcon={<GoogleIcon />}
                 sx={{
-                  mb: 2,
-                  py: 1.2,
-                  fontSize: '0.9rem',
+                  py: { xs: 1.5, sm: 1.2 },
+                  fontSize: { xs: '1rem', sm: '0.9rem' },
                   fontWeight: 600,
                   borderRadius: 2,
                   textTransform: 'none',
@@ -394,8 +469,8 @@ const Login = () => {
                 Continue with Google
               </Button>
 
-              <Box sx={{ textAlign: 'center', mb: 1 }}>
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+              <Box sx={{ textAlign: 'center', mt: { xs: 3, sm: 2 }, pb: { xs: 2, sm: 0 } }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.9rem', sm: '0.8rem' } }}>
                   Don't have an account?{' '}
                   <Button
                     variant="text"
@@ -403,8 +478,8 @@ const Login = () => {
                     sx={{
                       color: theme.palette.primary.main,
                       textDecoration: 'none',
-                      fontWeight: 600,
-                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      fontSize: { xs: '0.9rem', sm: '0.8rem' },
                       textTransform: 'none',
                       p: 0,
                       minWidth: 'auto',
