@@ -22,7 +22,8 @@ import {
   Build as BuildIcon,
   LocalOffer as PromotionIcon,
   Security as SecurityIcon,
-  Speed as SpeedIcon
+  Speed as SpeedIcon,
+  Warning as WarningIcon
 } from '@mui/icons-material';
 import { keyframes } from '@emotion/react';
 import api, { getBaseUrl } from '../services/api';
@@ -168,8 +169,14 @@ const Wallet = () => {
       setExchangeRate(response.data.rate);
     } catch (error) {
       console.error('Failed to fetch exchange rate:', error);
-      // Keep current rate if API error
-      console.warn('Exchange rate API error:', error.response?.data?.message);
+      if (error.response?.status === 404) {
+        // Exchange rate not set by admin
+        setExchangeRate(null);
+        console.warn('Exchange rate not set by administrator');
+      } else {
+        // Keep current rate if other API error
+        console.warn('Exchange rate API error:', error.response?.data?.message);
+      }
     }
   };
 
@@ -177,6 +184,13 @@ const Wallet = () => {
     setLoading(true);
     setError('');
     setMessage('');
+
+    // Validate exchange rate for Nigerian payments
+    if (selectedCountry === 'nigeria' && exchangeRate === null) {
+      setError('Exchange rate not set by administrator. Please contact support to enable Nigerian payments.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await api.post('/wallet/deposit', { 
@@ -1253,28 +1267,28 @@ const Wallet = () => {
                 <Grid item xs={12} sm={6} md={5}>
                   <Card
                     sx={{
-                      cursor: 'pointer',
+                      cursor: exchangeRate === null ? 'not-allowed' : 'pointer',
                       border: '3px solid',
-                      borderColor: selectedCountry === 'nigeria' ? '#1976d2' : '#e0e0e0',
+                      borderColor: selectedCountry === 'nigeria' ? '#1976d2' : (exchangeRate === null ? '#ff9800' : '#e0e0e0'),
                       borderRadius: 3,
-                      bgcolor: selectedCountry === 'nigeria' ? '#f3f8ff' : '#ffffff',
+                      bgcolor: selectedCountry === 'nigeria' ? '#f3f8ff' : (exchangeRate === null ? '#fff8e1' : '#ffffff'),
                       transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                       height: '100%',
                       position: 'relative',
                       overflow: 'visible',
-                      opacity: 1,
+                      opacity: exchangeRate === null ? 0.7 : 1,
                       boxShadow: selectedCountry === 'nigeria' 
                         ? '0 12px 40px rgba(25, 118, 210, 0.25)' 
-                        : '0 4px 20px rgba(0, 0, 0, 0.08)',
+                        : (exchangeRate === null ? '0 4px 20px rgba(255, 152, 0, 0.15)' : '0 4px 20px rgba(0, 0, 0, 0.08)'),
                       transform: selectedCountry === 'nigeria' ? 'scale(1.02)' : 'scale(1)',
-                      '&:hover': {
+                      '&:hover': exchangeRate === null ? {} : {
                         borderColor: '#1976d2',
                         transform: 'scale(1.02) translateY(-4px)',
                         boxShadow: '0 16px 48px rgba(25, 118, 210, 0.3)',
                         bgcolor: '#f3f8ff'
                       }
                     }}
-                    onClick={() => handleCountrySelect('nigeria')}
+                    onClick={() => exchangeRate === null ? null : handleCountrySelect('nigeria')}
                   >
                     {/* Selected Badge */}
                     {selectedCountry === 'nigeria' && (
@@ -1339,6 +1353,25 @@ const Wallet = () => {
                           Nigerian Naira (NGN ₦)
                         </Typography>
                       </Box>
+
+                      {/* Exchange Rate Warning */}
+                      {exchangeRate === null && (
+                        <Box sx={{
+                          mt: 2,
+                          p: 2,
+                          bgcolor: 'rgba(255, 152, 0, 0.1)',
+                          border: '1px solid rgba(255, 152, 0, 0.3)',
+                          borderRadius: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1
+                        }}>
+                          <WarningIcon sx={{ fontSize: 16, color: '#ff9800' }} />
+                          <Typography variant="caption" sx={{ color: '#e65100', fontWeight: 600 }}>
+                            Exchange rate not set by administrator. Contact support to enable Nigerian payments.
+                          </Typography>
+                        </Box>
+                      )}
 
                       <Divider sx={{ my: 3, borderColor: 'rgba(0, 0, 0, 0.08)' }} />
 
@@ -1498,7 +1531,10 @@ const Wallet = () => {
                       Exchange Rate:
                     </Typography>
                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                      {`1 GHS = ₦${exchangeRate?.toLocaleString() || '162'}`}
+                      {exchangeRate === null
+                        ? 'Not set by administrator'
+                        : `1 GHS = ₦${exchangeRate?.toLocaleString()}`
+                      }
                     </Typography>
                   </Box>
                   <Divider sx={{ my: 2 }} />
@@ -1569,7 +1605,8 @@ const Wallet = () => {
               disabled={
                 loading || 
                 !amount || 
-                parseFloat(amount) < 1
+                parseFloat(amount) < 1 ||
+                (selectedCountry === 'nigeria' && exchangeRate === null)
               }
             >
               {loading ? 'Processing...' : `Proceed to Payment ${selectedCountry === 'nigeria' ? '(₦)' : '(₵)'}`}
