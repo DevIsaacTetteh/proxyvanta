@@ -5,7 +5,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Container, Grid, Chip, Avatar, IconButton, Tooltip,
   Skeleton, CircularProgress,
-  Dialog, DialogTitle, DialogContent, DialogActions
+  Dialog, DialogTitle, DialogContent, DialogActions, Divider
 } from '@mui/material';
 import {
   AccountBalanceWallet as WalletIcon,
@@ -20,7 +20,9 @@ import {
   Announcement as AnnouncementIcon,
   Update as UpdateIcon,
   Build as BuildIcon,
-  LocalOffer as PromotionIcon
+  LocalOffer as PromotionIcon,
+  Security as SecurityIcon,
+  Speed as SpeedIcon
 } from '@mui/icons-material';
 import { keyframes } from '@emotion/react';
 import api, { getBaseUrl } from '../services/api';
@@ -60,10 +62,19 @@ const Wallet = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [news, setNews] = useState([]);
   const [newsLoading, setNewsLoading] = useState(true);
+  
+  // New state for multi-country payment
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [convertedAmount, setConvertedAmount] = useState(0);
+  const [showAmountInput, setShowAmountInput] = useState(false);
+  
+  // Currency conversion rates (GHS to NGN) - will be fetched from backend
+  const [exchangeRate, setExchangeRate] = useState(null);
 
   useEffect(() => {
     fetchWalletData(true); // Mark as initial load
     fetchNews();
+    fetchExchangeRate();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Refresh data when location changes (navigation)
@@ -151,13 +162,28 @@ const Wallet = () => {
     }
   };
 
+  const fetchExchangeRate = async () => {
+    try {
+      const response = await api.get('/public/nigerian-payments/exchange-rate');
+      setExchangeRate(response.data.rate);
+    } catch (error) {
+      console.error('Failed to fetch exchange rate:', error);
+      // Keep current rate if API error
+      console.warn('Exchange rate API error:', error.response?.data?.message);
+    }
+  };
+
   const handleDeposit = async () => {
     setLoading(true);
     setError('');
     setMessage('');
 
     try {
-      const response = await api.post('/wallet/deposit', { amount: parseFloat(amount) });
+      const response = await api.post('/wallet/deposit', { 
+        amount: parseFloat(amount),
+        country: selectedCountry,
+        convertedAmount: selectedCountry === 'nigeria' ? convertedAmount : null
+      });
 
       // Close dialog and redirect to Paystack payment page
       setDialogOpen(false);
@@ -176,6 +202,35 @@ const Wallet = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCountrySelect = (country) => {
+    setSelectedCountry(country);
+    setShowAmountInput(true);
+    setAmount('');
+    setConvertedAmount(0);
+    setError('');
+    setMessage('');
+  };
+
+  const handleAmountChange = (value) => {
+    setAmount(value);
+    if (selectedCountry === 'nigeria' && value && exchangeRate !== null) {
+      const ghsAmount = parseFloat(value);
+      const ngnAmount = ghsAmount * exchangeRate;
+      setConvertedAmount(ngnAmount);
+    } else {
+      setConvertedAmount(0);
+    }
+  };
+
+  const handleBackToCountrySelect = () => {
+    setShowAmountInput(false);
+    setSelectedCountry('');
+    setAmount('');
+    setConvertedAmount(0);
+    setError('');
+    setMessage('');
   };
 
   const getNewsTypeIcon = (type) => {
@@ -658,16 +713,16 @@ const Wallet = () => {
                             '& .MuiTableCell-head': {
                               bgcolor: 'grey.50',
                               fontWeight: 700,
-                              fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem' },
+                              fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
                               color: '#333',
                               borderBottom: '2px solid rgba(0,0,0,0.08)',
-                              py: { xs: 1.5, sm: 2 }
+                              py: { xs: 1, sm: 1.5 }
                             }
                           }}>
-                            <TableCell sx={{ minWidth: { xs: 80, sm: 100 } }}>Type</TableCell>
-                            <TableCell sx={{ minWidth: { xs: 80, sm: 100 } }}>Amount</TableCell>
-                            <TableCell sx={{ minWidth: { xs: 80, sm: 100 } }}>Status</TableCell>
-                            <TableCell sx={{ minWidth: { xs: 120, sm: 140 } }}>Date</TableCell>
+                            <TableCell sx={{ minWidth: { xs: 70, sm: 80 }, fontWeight: 700, fontSize: { xs: '0.75rem', sm: '0.8rem' }, py: { xs: 1, sm: 1.5 } }}>Type</TableCell>
+                            <TableCell sx={{ minWidth: { xs: 70, sm: 80 }, fontWeight: 700, fontSize: { xs: '0.75rem', sm: '0.8rem' }, py: { xs: 1, sm: 1.5 } }}>Amount</TableCell>
+                            <TableCell sx={{ minWidth: { xs: 70, sm: 80 }, fontWeight: 700, fontSize: { xs: '0.75rem', sm: '0.8rem' }, py: { xs: 1, sm: 1.5 } }}>Status</TableCell>
+                            <TableCell sx={{ minWidth: { xs: 100, sm: 120 }, fontWeight: 700, fontSize: { xs: '0.75rem', sm: '0.8rem' }, py: { xs: 1, sm: 1.5 } }}>Date</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
@@ -679,48 +734,48 @@ const Wallet = () => {
                                 transition: 'background-color 0.2s ease'
                               }}
                             >
-                              <TableCell sx={{ py: { xs: 1.5, sm: 2 } }}>
+                              <TableCell sx={{ py: { xs: 1, sm: 1.5 } }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                   {transaction.type === 'deposit' ? (
-                                    <AddIcon sx={{ color: '#4caf50', mr: 1, fontSize: { xs: 16, sm: 18 } }} />
+                                    <AddIcon sx={{ color: '#4caf50', mr: 0.5, fontSize: { xs: 14, sm: 16 } }} />
                                   ) : transaction.type === 'purchase' ? (
-                                    <PaymentIcon sx={{ color: '#ff9800', mr: 1, fontSize: { xs: 16, sm: 18 } }} />
+                                    <PaymentIcon sx={{ color: '#ff9800', mr: 0.5, fontSize: { xs: 14, sm: 16 } }} />
                                   ) : (
-                                    <HistoryIcon sx={{ color: '#2196f3', mr: 1, fontSize: { xs: 16, sm: 18 } }} />
+                                    <HistoryIcon sx={{ color: '#2196f3', mr: 0.5, fontSize: { xs: 14, sm: 16 } }} />
                                   )}
                                   <Typography
                                     variant="body2"
                                     sx={{
                                       fontWeight: 600,
                                       textTransform: 'capitalize',
-                                      fontSize: { xs: '0.8rem', sm: '0.85rem' }
+                                      fontSize: { xs: '0.75rem', sm: '0.8rem' }
                                     }}
                                   >
                                     {transaction.type}
                                   </Typography>
                                 </Box>
                               </TableCell>
-                              <TableCell sx={{ py: { xs: 1.5, sm: 2 } }}>
+                              <TableCell sx={{ py: { xs: 1, sm: 1.5 } }}>
                                 <Typography
                                   variant="body2"
                                   sx={{
                                     fontWeight: 600,
                                     color: transaction.type === 'deposit' ? '#4caf50' : '#f44336',
-                                    fontSize: { xs: '0.85rem', sm: '0.9rem' }
+                                    fontSize: { xs: '0.8rem', sm: '0.85rem' }
                                   }}
                                 >
                                   {transaction.type === 'deposit' ? '+' : '-'}{transaction.amount?.toLocaleString()}₵
                                 </Typography>
                               </TableCell>
-                              <TableCell sx={{ py: { xs: 1.5, sm: 2 } }}>
+                              <TableCell sx={{ py: { xs: 1, sm: 1.5 } }}>
                                 <Chip
                                   label={transaction.status}
                                   size="small"
                                   sx={{
-                                    fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                                    fontSize: { xs: '0.65rem', sm: '0.7rem' },
                                     fontWeight: 600,
                                     textTransform: 'capitalize',
-                                    height: { xs: 24, sm: 28 },
+                                    height: { xs: 20, sm: 24 },
                                     ...(transaction.status === 'completed' && {
                                       bgcolor: 'rgba(76, 175, 80, 0.1)',
                                       color: '#4caf50'
@@ -735,13 +790,13 @@ const Wallet = () => {
                                     })
                                   }}
                                   icon={
-                                    transaction.status === 'completed' ? <CheckCircleIcon sx={{ fontSize: '0.75rem !important' }} /> :
-                                    transaction.status === 'pending' ? <PendingIcon sx={{ fontSize: '0.75rem !important' }} /> :
-                                    <CancelIcon sx={{ fontSize: '0.75rem !important' }} />
+                                    transaction.status === 'completed' ? <CheckCircleIcon sx={{ fontSize: '0.7rem !important' }} /> :
+                                    transaction.status === 'pending' ? <PendingIcon sx={{ fontSize: '0.7rem !important' }} /> :
+                                    <CancelIcon sx={{ fontSize: '0.7rem !important' }} />
                                   }
                                 />
                               </TableCell>
-                              <TableCell sx={{ py: { xs: 1.5, sm: 2 } }}>
+                              <TableCell sx={{ py: { xs: 1, sm: 1.5 } }}>
                                 <Typography
                                   variant="body2"
                                   sx={{
@@ -954,7 +1009,13 @@ const Wallet = () => {
       {/* Add Funds Dialog */}
       <Dialog
         open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
+        onClose={() => {
+          setDialogOpen(false);
+          setShowAmountInput(false);
+          setSelectedCountry('');
+          setAmount('');
+          setConvertedAmount(0);
+        }}
         maxWidth="sm"
         fullWidth
       >
@@ -1007,61 +1068,476 @@ const Wallet = () => {
             </Alert>
           )}
 
-          <Box sx={{ mt: 1 }}>
-            <TextField
-              fullWidth
-              label="Deposit Amount (₵)"
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-              autoFocus
-              sx={{
-                mb: 3,
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                  fontSize: '1rem',
-                  backgroundColor: 'rgba(255,255,255,0.8)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.9)'
-                  },
-                  '&.Mui-focused': {
-                    backgroundColor: 'white'
-                  }
-                },
-                '& .MuiInputLabel-root': {
-                  fontWeight: 500,
-                  color: '#555'
-                }
-              }}
-              inputProps={{
-                min: 1,
-                step: 0.01
-              }}
-              helperText="Minimum deposit: ₵1.00"
-            />
-
-            <Box sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              p: 2,
-              bgcolor: 'rgba(102, 126, 234, 0.1)',
-              borderRadius: 2,
-              border: '1px solid rgba(102, 126, 234, 0.2)'
-            }}>
-              <Avatar sx={{
-                bgcolor: 'primary.main',
-                width: 32,
-                height: 32
-              }}>
-                <CheckCircleIcon sx={{ fontSize: 18, color: 'white' }} />
-              </Avatar>
-              <Typography variant="body2" sx={{ color: '#555', fontWeight: 500 }}>
-                💳 Your payment is secured by Paystack's industry-leading encryption
+          {!showAmountInput ? (
+            // Country Selection Step
+            <Box sx={{ mt: 1 }}>
+              <Typography variant="h5" sx={{ mb: 4, textAlign: 'center', fontWeight: 700, color: 'text.primary' }}>
+                Choose Your Payment Country
               </Typography>
+              
+              <Grid container spacing={4} justifyContent="center">
+                {/* Ghana Card */}
+                <Grid item xs={12} sm={6} md={5}>
+                  <Card
+                    sx={{
+                      cursor: 'pointer',
+                      border: '3px solid',
+                      borderColor: selectedCountry === 'ghana' ? '#1976d2' : '#e0e0e0',
+                      borderRadius: 3,
+                      bgcolor: selectedCountry === 'ghana' ? '#f3f8ff' : '#ffffff',
+                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                      height: '100%',
+                      position: 'relative',
+                      overflow: 'visible',
+                      boxShadow: selectedCountry === 'ghana' 
+                        ? '0 12px 40px rgba(25, 118, 210, 0.25)' 
+                        : '0 4px 20px rgba(0, 0, 0, 0.08)',
+                      transform: selectedCountry === 'ghana' ? 'scale(1.02)' : 'scale(1)',
+                      '&:hover': {
+                        borderColor: '#1976d2',
+                        transform: 'scale(1.02) translateY(-4px)',
+                        boxShadow: '0 16px 48px rgba(25, 118, 210, 0.3)',
+                        bgcolor: '#f3f8ff'
+                      }
+                    }}
+                    onClick={() => handleCountrySelect('ghana')}
+                  >
+                    {/* Selected Badge */}
+                    {selectedCountry === 'ghana' && (
+                      <Box sx={{
+                        position: 'absolute',
+                        top: -12,
+                        right: 20,
+                        bgcolor: '#1976d2',
+                        color: 'white',
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: 2,
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        boxShadow: '0 4px 12px rgba(25, 118, 210, 0.4)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5
+                      }}>
+                        <CheckCircleIcon sx={{ fontSize: 16 }} />
+                        SELECTED
+                      </Box>
+                    )}
+
+                    <CardContent sx={{ p: 4 }}>
+                      {/* Flag Section */}
+                      <Box sx={{
+                        textAlign: 'center',
+                        mb: 3,
+                        position: 'relative'
+                      }}>
+                        <Box sx={{
+                          width: 100,
+                          height: 100,
+                          margin: '0 auto',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          bgcolor: selectedCountry === 'ghana' ? 'rgba(25, 118, 210, 0.1)' : 'rgba(0, 0, 0, 0.04)',
+                          boxShadow: selectedCountry === 'ghana' ? '0 8px 24px rgba(25, 118, 210, 0.2)' : 'none',
+                          transition: 'all 0.3s ease',
+                          mb: 2
+                        }}>
+                          <Typography sx={{ fontSize: '4rem', lineHeight: 1 }}>
+                            🇬🇭
+                          </Typography>
+                        </Box>
+                        <Typography variant="h4" sx={{
+                          fontWeight: 800,
+                          color: '#1a1a1a',
+                          mb: 0.5,
+                          letterSpacing: '-0.5px'
+                        }}>
+                          Ghana
+                        </Typography>
+                        <Typography variant="body1" sx={{
+                          color: '#1976d2',
+                          fontWeight: 700,
+                          fontSize: '1.1rem'
+                        }}>
+                          Ghanaian Cedis (GHS ₵)
+                        </Typography>
+                      </Box>
+
+                      <Divider sx={{ my: 3, borderColor: 'rgba(0, 0, 0, 0.08)' }} />
+
+                      {/* Payment Methods Section */}
+                      <Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2, gap: 1 }}>
+                          <SecurityIcon sx={{ fontSize: 20, color: '#1976d2' }} />
+                          <Typography variant="body2" sx={{
+                            fontWeight: 700,
+                            color: '#1a1a1a',
+                            fontSize: '0.9rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px'
+                          }}>
+                            Payment Methods
+                          </Typography>
+                        </Box>
+                        
+                        <Box sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 1.5
+                        }}>
+                          {[
+                            { icon: '📱', name: 'MTN Mobile Money', popular: true },
+                            { icon: '💳', name: 'Debit/Credit Cards', popular: false },
+                            { icon: '🏦', name: 'Bank Transfer', popular: false }
+                          ].map((method) => (
+                            <Box key={method.name} sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1.5,
+                              p: 1.5,
+                              borderRadius: 2,
+                              bgcolor: 'rgba(25, 118, 210, 0.04)',
+                              border: '1px solid rgba(25, 118, 210, 0.1)'
+                            }}>
+                              <Typography sx={{ fontSize: '1.5rem' }}>{method.icon}</Typography>
+                              <Typography sx={{
+                                fontSize: '0.85rem',
+                                fontWeight: 600,
+                                color: '#1a1a1a',
+                                flex: 1
+                              }}>
+                                {method.name}
+                              </Typography>
+                              {method.popular && (
+                                <Chip
+                                  label="POPULAR"
+                                  size="small"
+                                  sx={{
+                                    height: 20,
+                                    fontSize: '0.65rem',
+                                    fontWeight: 700,
+                                    bgcolor: '#4caf50',
+                                    color: 'white',
+                                    '& .MuiChip-label': { px: 1 }
+                                  }}
+                                />
+                              )}
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+
+                      {/* Features */}
+                      <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid rgba(0, 0, 0, 0.08)' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                          <SpeedIcon sx={{ fontSize: 16, color: '#4caf50' }} />
+                          <Typography variant="caption" sx={{ color: '#666', fontWeight: 600 }}>
+                            Instant Processing
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <SecurityIcon sx={{ fontSize: 16, color: '#4caf50' }} />
+                          <Typography variant="caption" sx={{ color: '#666', fontWeight: 600 }}>
+                            Secure & Encrypted
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+
+                {/* Nigeria Card */}
+                <Grid item xs={12} sm={6} md={5}>
+                  <Card
+                    sx={{
+                      cursor: 'pointer',
+                      border: '3px solid',
+                      borderColor: selectedCountry === 'nigeria' ? '#1976d2' : '#e0e0e0',
+                      borderRadius: 3,
+                      bgcolor: selectedCountry === 'nigeria' ? '#f3f8ff' : '#ffffff',
+                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                      height: '100%',
+                      position: 'relative',
+                      overflow: 'visible',
+                      opacity: 1,
+                      boxShadow: selectedCountry === 'nigeria' 
+                        ? '0 12px 40px rgba(25, 118, 210, 0.25)' 
+                        : '0 4px 20px rgba(0, 0, 0, 0.08)',
+                      transform: selectedCountry === 'nigeria' ? 'scale(1.02)' : 'scale(1)',
+                      '&:hover': {
+                        borderColor: '#1976d2',
+                        transform: 'scale(1.02) translateY(-4px)',
+                        boxShadow: '0 16px 48px rgba(25, 118, 210, 0.3)',
+                        bgcolor: '#f3f8ff'
+                      }
+                    }}
+                    onClick={() => handleCountrySelect('nigeria')}
+                  >
+                    {/* Selected Badge */}
+                    {selectedCountry === 'nigeria' && (
+                      <Box sx={{
+                        position: 'absolute',
+                        top: -12,
+                        right: 20,
+                        bgcolor: '#1976d2',
+                        color: 'white',
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: 2,
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        boxShadow: '0 4px 12px rgba(25, 118, 210, 0.4)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5
+                      }}>
+                        <CheckCircleIcon sx={{ fontSize: 16 }} />
+                        SELECTED
+                      </Box>
+                    )}
+
+                    <CardContent sx={{ p: 4 }}>
+                      {/* Flag Section */}
+                      <Box sx={{
+                        textAlign: 'center',
+                        mb: 3,
+                        position: 'relative'
+                      }}>
+                        <Box sx={{
+                          width: 100,
+                          height: 100,
+                          margin: '0 auto',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          bgcolor: selectedCountry === 'nigeria' ? 'rgba(25, 118, 210, 0.1)' : 'rgba(0, 0, 0, 0.04)',
+                          boxShadow: selectedCountry === 'nigeria' ? '0 8px 24px rgba(25, 118, 210, 0.2)' : 'none',
+                          transition: 'all 0.3s ease',
+                          mb: 2
+                        }}>
+                          <Typography sx={{ fontSize: '4rem', lineHeight: 1 }}>
+                            🇳🇬
+                          </Typography>
+                        </Box>
+                        <Typography variant="h4" sx={{
+                          fontWeight: 800,
+                          color: '#1a1a1a',
+                          mb: 0.5,
+                          letterSpacing: '-0.5px'
+                        }}>
+                          Nigeria
+                        </Typography>
+                        <Typography variant="body1" sx={{
+                          color: '#1976d2',
+                          fontWeight: 700,
+                          fontSize: '1.1rem'
+                        }}>
+                          Nigerian Naira (NGN ₦)
+                        </Typography>
+                      </Box>
+
+                      <Divider sx={{ my: 3, borderColor: 'rgba(0, 0, 0, 0.08)' }} />
+
+                      {/* Payment Methods Section */}
+                      <Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2, gap: 1 }}>
+                          <SecurityIcon sx={{ fontSize: 20, color: '#1976d2' }} />
+                          <Typography variant="body2" sx={{
+                            fontWeight: 700,
+                            color: '#1a1a1a',
+                            fontSize: '0.9rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px'
+                          }}>
+                            Payment Methods
+                          </Typography>
+                        </Box>
+                        
+                        <Box sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 1.5
+                        }}>
+                          {[
+                            { icon: '💳', name: 'Debit/Credit Cards', popular: true },
+                            { icon: '🏦', name: 'Bank Transfer', popular: false },
+                            { icon: '📞', name: 'USSD Banking', popular: false }
+                          ].map((method) => (
+                            <Box key={method.name} sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1.5,
+                              p: 1.5,
+                              borderRadius: 2,
+                              bgcolor: 'rgba(25, 118, 210, 0.04)',
+                              border: '1px solid rgba(25, 118, 210, 0.1)'
+                            }}>
+                              <Typography sx={{ fontSize: '1.5rem' }}>{method.icon}</Typography>
+                              <Typography sx={{
+                                fontSize: '0.85rem',
+                                fontWeight: 600,
+                                color: '#1a1a1a',
+                                flex: 1
+                              }}>
+                                {method.name}
+                              </Typography>
+                              {method.popular && (
+                                <Chip
+                                  label="POPULAR"
+                                  size="small"
+                                  sx={{
+                                    height: 20,
+                                    fontSize: '0.65rem',
+                                    fontWeight: 700,
+                                    bgcolor: '#4caf50',
+                                    color: 'white',
+                                    '& .MuiChip-label': { px: 1 }
+                                  }}
+                                />
+                              )}
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+
+                      {/* Features */}
+                      <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid rgba(0, 0, 0, 0.08)' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                          <SpeedIcon sx={{ fontSize: 16, color: '#4caf50' }} />
+                          <Typography variant="caption" sx={{ color: '#666', fontWeight: 600 }}>
+                            Instant Processing
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <SecurityIcon sx={{ fontSize: 16, color: '#4caf50' }} />
+                          <Typography variant="caption" sx={{ color: '#666', fontWeight: 600 }}>
+                            Secure & Encrypted
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </CardContent>
+
+                  </Card>
+                </Grid>
+              </Grid>
             </Box>
-          </Box>
+          ) : (
+            // Amount Input Step
+            <Box sx={{ mt: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <Button
+                  onClick={handleBackToCountrySelect}
+                  sx={{ mr: 2, minWidth: 'auto', px: 1 }}
+                >
+                  ← Back
+                </Button>
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  {selectedCountry === 'ghana' ? '🇬🇭 Ghana' : '🇳🇬 Nigeria'} - Enter Amount
+                </Typography>
+              </Box>
+
+              <TextField
+                fullWidth
+                label={`Amount in Ghanaian Cedis (₵)`}
+                type="number"
+                value={amount}
+                onChange={(e) => handleAmountChange(e.target.value)}
+                required
+                autoFocus
+                sx={{
+                  mb: 3,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    fontSize: '1rem',
+                    backgroundColor: 'rgba(255,255,255,0.8)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255,255,255,0.9)'
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: 'white'
+                    }
+                  },
+                  '& .MuiInputLabel-root': {
+                    fontWeight: 500,
+                    color: '#555'
+                  }
+                }}
+                inputProps={{
+                  min: 1,
+                  step: 0.01
+                }}
+                helperText="Minimum deposit: ₵1.00"
+              />
+
+              {selectedCountry === 'nigeria' && amount && (
+                <Box sx={{
+                  p: 3,
+                  bgcolor: 'info.50',
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'info.200',
+                  mb: 3
+                }}>
+                  <Typography variant="h6" sx={{ mb: 2, color: 'info.800', fontWeight: 600 }}>
+                    💱 Currency Conversion
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="body1">
+                      Amount in GHS:
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      ₵{parseFloat(amount).toLocaleString()}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="body1">
+                      Exchange Rate:
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      {`1 GHS = ₦${exchangeRate?.toLocaleString() || '162'}`}
+                    </Typography>
+                  </Box>
+                  <Divider sx={{ my: 2 }} />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Amount in NGN:
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                      ₦{convertedAmount.toLocaleString()}
+                    </Typography>
+                  </Box>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', mt: 1, display: 'block' }}>
+                    * Exchange rate is approximate and may vary. Final amount will be charged in NGN.
+                  </Typography>
+                </Box>
+              )}
+
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                p: 2,
+                bgcolor: 'rgba(102, 126, 234, 0.1)',
+                borderRadius: 2,
+                border: '1px solid rgba(102, 126, 234, 0.2)'
+              }}>
+                <Avatar sx={{
+                  bgcolor: 'primary.main',
+                  width: 32,
+                  height: 32
+                }}>
+                  <CheckCircleIcon sx={{ fontSize: 18, color: 'white' }} />
+                </Avatar>
+                <Typography variant="body2" sx={{ color: '#555', fontWeight: 500 }}>
+                  💳 Your payment is secured by Paystack's industry-leading encryption
+                </Typography>
+              </Box>
+            </Box>
+          )}
         </DialogContent>
 
         <DialogActions sx={{
@@ -1071,22 +1547,34 @@ const Wallet = () => {
           justifyContent: 'center'
         }}>
           <Button
-            onClick={() => setDialogOpen(false)}
+            onClick={() => {
+              setDialogOpen(false);
+              setShowAmountInput(false);
+              setSelectedCountry('');
+              setAmount('');
+              setConvertedAmount(0);
+            }}
             variant="outlined"
           >
             Cancel
           </Button>
-          <Button
-            onClick={() => {
-              if (parseFloat(amount) >= 1) {
-                handleDeposit();
+          {showAmountInput && (
+            <Button
+              onClick={() => {
+                if (parseFloat(amount) >= 1) {
+                  handleDeposit();
+                }
+              }}
+              variant="contained"
+              disabled={
+                loading || 
+                !amount || 
+                parseFloat(amount) < 1
               }
-            }}
-            variant="contained"
-            disabled={loading || !amount || parseFloat(amount) < 1}
-          >
-            {loading ? 'Processing...' : 'Proceed to Payment'}
-          </Button>
+            >
+              {loading ? 'Processing...' : `Proceed to Payment ${selectedCountry === 'nigeria' ? '(₦)' : '(₵)'}`}
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </>

@@ -334,7 +334,7 @@ const SupportChat = ({ onClose }) => {
       {/* Main Content */}
       <Grid
         container
-        spacing={2}
+        spacing={{ xs: 1, sm: 2 }}
         sx={{ flex: 1, minHeight: 0, overflowX: 'auto', overflowY: 'auto' }}
       >
         {/* Tickets List */}
@@ -346,7 +346,7 @@ const SupportChat = ({ onClose }) => {
         >
           <Card
             sx={{
-              borderRadius: 2,
+              borderRadius: { xs: 1, sm: 2 },
               boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
               flex: 1,
               display: 'flex',
@@ -525,7 +525,7 @@ const SupportChat = ({ onClose }) => {
               </Box>
 
               {/* Messages */}
-              <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
+              <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, sm: 3 } }}>
                 {messages.map((message, index) => (
                   <Box
                     key={message.id}
@@ -537,21 +537,22 @@ const SupportChat = ({ onClose }) => {
                   >
                     <Paper
                       sx={{
-                        p: 2,
-                        maxWidth: '70%',
+                        p: { xs: 1.5, sm: 2 },
+                        maxWidth: { xs: '85%', sm: '70%' },
                         borderRadius: message.is_admin ? '18px 18px 18px 4px' : '18px 18px 4px 18px',
                         bgcolor: message.is_admin ? 'grey.100' : 'primary.main',
                         color: message.is_admin ? 'text.primary' : 'white',
                       }}
                     >
-                      <Typography variant="body2">{message.message}</Typography>
+                      <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{message.message}</Typography>
                       <Typography
                         variant="caption"
                         sx={{
                           display: 'block',
                           mt: 0.5,
                           opacity: 0.7,
-                          textAlign: message.is_admin ? 'left' : 'right'
+                          textAlign: message.is_admin ? 'left' : 'right',
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' }
                         }}
                       >
                         {formatDate(message.created_at)}
@@ -564,7 +565,7 @@ const SupportChat = ({ onClose }) => {
 
               {/* Message Input */}
               {selectedTicket.status !== 'closed' && (
-                <Box sx={{ p: 3, borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+                <Box sx={{ p: { xs: 2, sm: 3 }, borderTop: '1px solid rgba(0,0,0,0.08)' }}>
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <TextField
                       fullWidth
@@ -573,15 +574,16 @@ const SupportChat = ({ onClose }) => {
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                       disabled={loading}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                      size="small"
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: { xs: 2, sm: 3 } } }}
                     />
                     <Button
                       variant="contained"
                       onClick={handleSendMessage}
                       disabled={!newMessage.trim() || loading}
-                      sx={{ borderRadius: 3, px: 3 }}
+                      sx={{ borderRadius: { xs: 2, sm: 3 }, px: { xs: 2, sm: 3 }, minWidth: { xs: 48, sm: 64 } }}
                     >
-                      {loading ? <CircularProgress size={20} /> : <SendIcon />}
+                      {loading ? <CircularProgress size={20} /> : <SendIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />}
                     </Button>
                   </Box>
                 </Box>

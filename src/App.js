@@ -134,6 +134,56 @@ const theme = createTheme({
         },
       },
     },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          margin: {
+            xs: 8,
+            sm: 16,
+            md: 24,
+          },
+          width: {
+            xs: 'calc(100% - 16px)',
+            sm: 'auto',
+          },
+          maxWidth: {
+            xs: 'calc(100% - 16px)',
+            sm: '600px',
+            md: '800px',
+          },
+        },
+      },
+    },
+    MuiTableContainer: {
+      styleOverrides: {
+        root: {
+          overflowX: 'auto',
+          '& .MuiTable-root': {
+            minWidth: {
+              xs: 600,
+              sm: 700,
+              md: '100%',
+            },
+          },
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: {
+            xs: 12,
+            sm: 16,
+            md: 20,
+          },
+          boxShadow: {
+            xs: '0 4px 12px rgba(0,0,0,0.08)',
+            sm: '0 6px 20px rgba(0,0,0,0.1)',
+            md: '0 8px 32px rgba(0,0,0,0.12)',
+          },
+        },
+      },
+    },
     MuiAppBar: {
       styleOverrides: {
         root: {
@@ -168,22 +218,6 @@ const theme = createTheme({
           '&:hover': {
             transform: 'translateY(-2px)',
             boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
-          },
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: {
-            xs: 12,
-            sm: 16,
-            md: 20,
-          },
-          boxShadow: {
-            xs: '0 4px 12px rgba(0,0,0,0.08)',
-            sm: '0 6px 20px rgba(0,0,0,0.1)',
-            md: '0 8px 32px rgba(0,0,0,0.12)',
           },
         },
       },
