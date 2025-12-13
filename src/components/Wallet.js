@@ -1091,7 +1091,7 @@ const Wallet = () => {
               
               <Grid container spacing={4} justifyContent="center">
                 {/* Ghana Card */}
-                <Grid item xs={12} sm={6} md={5}>
+                <Grid item xs={6} sm={6} md={5}>
                   <Card
                     sx={{
                       cursor: 'pointer',
@@ -1264,7 +1264,7 @@ const Wallet = () => {
                 </Grid>
 
                 {/* Nigeria Card */}
-                <Grid item xs={12} sm={6} md={5}>
+                <Grid item xs={6} sm={6} md={5}>
                   <Card
                     sx={{
                       cursor: exchangeRate === null ? 'not-allowed' : 'pointer',
