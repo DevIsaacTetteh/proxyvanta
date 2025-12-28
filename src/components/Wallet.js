@@ -70,13 +70,15 @@ const Wallet = () => {
   // Confirmation dialog for Nigerian payments
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   
-  // Currency conversion rates (NGN to USD for Nigerians) - will be fetched from backend
+  // Currency conversion rates (NGN to USD for Nigerians, GHS to USD for Ghanaians) - will be fetched from backend
   const [exchangeRate, setExchangeRate] = useState(null);
+  const [ghanaExchangeRate, setGhanaExchangeRate] = useState(null);
 
   useEffect(() => {
     fetchWalletData(true); // Mark as initial load
     fetchNews();
     fetchExchangeRate();
+    fetchGhanaExchangeRate();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Refresh data when location changes (navigation)
@@ -181,6 +183,23 @@ const Wallet = () => {
     }
   };
 
+  const fetchGhanaExchangeRate = async () => {
+    try {
+      const response = await api.get('/public/ghana-payments/exchange-rate');
+      setGhanaExchangeRate(response.data.rate);
+    } catch (error) {
+      console.error('Failed to fetch GHS to USD exchange rate:', error);
+      if (error.response?.status === 404) {
+        // Exchange rate not set by admin
+        setGhanaExchangeRate(null);
+        console.warn('GHS to USD exchange rate not set by administrator');
+      } else {
+        // Keep current rate if other API error
+        console.warn('Ghana exchange rate API error:', error.response?.data?.message);
+      }
+    }
+  };
+
   const handleDeposit = async () => {
     setLoading(true);
     setError('');
@@ -192,14 +211,34 @@ const Wallet = () => {
       setLoading(false);
       return;
     }
+    // Validate exchange rate for Ghanaian payments
+    if (selectedCountry === 'ghana' && ghanaExchangeRate === null) {
+      setError('GHS to USD exchange rate not set by administrator. Please contact support to enable Ghana payments.');
+      setLoading(false);
+      return;
+    }
 
     try {
       let endpoint = '/wallet/deposit';
-      let requestData = { 
-        amount: selectedCountry === 'nigeria' ? convertedAmount : parseFloat(amount), // USD amount for Nigerians
-        country: selectedCountry,
-        ngnAmount: selectedCountry === 'nigeria' ? parseFloat(amount) : null // Original NGN amount
-      };
+      let requestData;
+      if (selectedCountry === 'nigeria') {
+        requestData = {
+          amount: convertedAmount, // USD derived from NGN
+          country: selectedCountry,
+          ngnAmount: parseFloat(amount) // Original NGN amount
+        };
+      } else if (selectedCountry === 'ghana') {
+        requestData = {
+          amount: convertedAmount, // USD preview for backend; backend will also compute
+          country: selectedCountry,
+          ghsAmount: parseFloat(amount) // Original GHS amount forwarded to Paystack
+        };
+      } else {
+        requestData = {
+          amount: parseFloat(amount),
+          country: selectedCountry
+        };
+      }
 
       // Use crypto endpoint for crypto payments
       if (selectedCountry === 'crypto') {
@@ -253,6 +292,10 @@ const Wallet = () => {
     if (selectedCountry === 'nigeria' && value && exchangeRate !== null) {
       const ngnAmount = parseFloat(value);
       const usdAmount = ngnAmount / exchangeRate; // Convert NGN to USD
+      setConvertedAmount(usdAmount);
+    } else if (selectedCountry === 'ghana' && value && ghanaExchangeRate !== null) {
+      const ghs = parseFloat(value);
+      const usdAmount = ghs / ghanaExchangeRate; // Convert GHS to USD
       setConvertedAmount(usdAmount);
     } else {
       setConvertedAmount(0);
@@ -471,18 +514,6 @@ const Wallet = () => {
                 ) : (
                   <>
                     ${balance.toFixed(2)}
-                    <Typography
-                      component="span"
-                      sx={{
-                        fontSize: { xs: '0.7rem', sm: '0.8rem' },
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        display: 'block',
-                        fontWeight: 500,
-                        mt: 0.25
-                      }}
-                    >
-                      ₵{(balance || 0).toLocaleString()} GHS
-                    </Typography>
                   </>
                 )}
               </Typography>
@@ -813,7 +844,7 @@ const Wallet = () => {
                                     fontSize: { xs: '0.8rem', sm: '0.85rem' }
                                   }}
                                 >
-                                  {transaction.type === 'deposit' ? '+' : '-'}{transaction.amount?.toLocaleString()}{transaction.country === 'crypto' ? '$' : '₵'}
+                                  {transaction.type === 'deposit' ? '+' : '-'}${transaction.amount?.toLocaleString()}
                                 </Typography>
                               </TableCell>
                               <TableCell sx={{ py: { xs: 1, sm: 1.5 } }}>
@@ -1417,7 +1448,13 @@ const Wallet = () => {
 
               <TextField
                 fullWidth
-                label={selectedCountry === 'crypto' ? 'Amount in US Dollars ($)' : selectedCountry === 'nigeria' ? `Amount in Nigerian Naira (₦)` : `Amount in Ghanaian Cedis (₵)`}
+                label={
+                  selectedCountry === 'ghana'
+                    ? 'Amount in Ghana Cedis (₵)'
+                    : selectedCountry === 'nigeria'
+                      ? 'Amount in Nigerian Naira (₦)'
+                      : 'Amount in US Dollars ($)'
+                }
                 type="number"
                 value={amount}
                 onChange={(e) => handleAmountChange(e.target.value)}
@@ -1442,10 +1479,19 @@ const Wallet = () => {
                   }
                 }}
                 inputProps={{
-                  min: selectedCountry === 'crypto' ? 1 : 1,
+                  min:
+                    selectedCountry === 'nigeria' ? 100 :
+                    selectedCountry === 'ghana' ? 1 :
+                    1,
                   step: 0.01
                 }}
-                helperText={selectedCountry === 'crypto' ? 'Minimum deposit: $1.00' : selectedCountry === 'nigeria' ? 'Minimum deposit: ₦100.00' : 'Minimum deposit: ₵1.00'}
+                helperText={
+                  selectedCountry === 'nigeria'
+                    ? 'Minimum deposit: ₦100.00'
+                    : selectedCountry === 'ghana'
+                      ? 'Minimum deposit: ₵1.00'
+                      : 'Minimum deposit: $1.00'
+                }
               />
 
               {selectedCountry === 'nigeria' && amount && (
@@ -1490,6 +1536,52 @@ const Wallet = () => {
                   </Box>
                   <Typography variant="caption" sx={{ color: 'text.secondary', mt: 1, display: 'block' }}>
                     * Exchange rate is approximate and may vary. Final amount will be charged in USD equivalent.
+                  </Typography>
+                </Box>
+              )}
+
+              {selectedCountry === 'ghana' && amount && (
+                <Box sx={{
+                  p: 3,
+                  bgcolor: 'info.50',
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'info.200',
+                  mb: 3
+                }}>
+                  <Typography variant="h6" sx={{ mb: 2, color: 'info.800', fontWeight: 600 }}>
+                    💱 Currency Conversion (GHS → USD)
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="body1">
+                      Amount in GHS:
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      ₵{parseFloat(amount).toLocaleString()}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="body1">
+                      Exchange Rate:
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      {ghanaExchangeRate === null
+                        ? 'Not set by administrator'
+                        : `₵${ghanaExchangeRate?.toLocaleString()} = $1 USD`
+                      }
+                    </Typography>
+                  </Box>
+                  <Divider sx={{ my: 2 }} />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Amount in USD:
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                      ${convertedAmount.toFixed(2)}
+                    </Typography>
+                  </Box>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', mt: 1, display: 'block' }}>
+                    * Exchange rate is approximate and may vary. Final amount will be credited to your wallet in USD.
                   </Typography>
                 </Box>
               )}
@@ -1555,7 +1647,7 @@ const Wallet = () => {
                 (selectedCountry === 'nigeria' && exchangeRate === null)
               }
             >
-              {loading ? 'Processing...' : `Proceed to Payment ${selectedCountry === 'nigeria' ? '(₦)' : '(₵)'}`}
+              {loading ? 'Processing...' : `Proceed to Payment`}
             </Button>
           )}
         </DialogActions>

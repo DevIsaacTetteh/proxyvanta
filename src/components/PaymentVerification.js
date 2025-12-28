@@ -126,7 +126,7 @@ const PaymentVerification = () => {
                   color: 'success.main',
                   mb: 1
                 }}>
-                  ₵{amount.toLocaleString()}
+                  ${amount.toLocaleString()}
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
                   Successfully added to your wallet
