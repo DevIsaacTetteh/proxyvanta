@@ -12,21 +12,17 @@ const Purchase = () => {
   const [balance, setBalance] = useState(0);
   const [pricingGroups, setPricingGroups] = useState([]);
   const [proxyStats, setProxyStats] = useState([]);
-  const [dollarRate, setDollarRate] = useState(12); // Default rate
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const getPricePerIP = (qty) => {
+  const getPriceForTier = (qty) => {
     const group = pricingGroups.find(g => qty >= g.min && qty <= g.max);
-    return group ? group.price : 10; // Default fallback
+    return group ? group.price : 0.81; // Default fallback in USD
   };
 
-  const pricePerIP = getPricePerIP(selectedIPs);
-  const totalPriceGHS = selectedIPs * pricePerIP;
-  const pricePerIPUSD = pricePerIP / dollarRate;
-  const totalPriceUSD = totalPriceGHS / dollarRate;
+  const tierPrice = getPriceForTier(selectedIPs);
 
   const ipOptions = [5, 10, 25, 50, 100, 200, 300, 400, 800, 1000, 1200, 1600, 2200, 3000];
 
@@ -34,12 +30,10 @@ const Purchase = () => {
     fetchBalance();
     fetchPricing();
     fetchProxyStats();
-    fetchDollarRate();
     
-    // Refresh pricing and dollar rate every 30 seconds to ensure current rates
+    // Refresh pricing every 30 seconds to ensure current rates
     const pricingInterval = setInterval(() => {
       fetchPricing();
-      fetchDollarRate();
     }, 30 * 1000);
     
     return () => clearInterval(pricingInterval);
@@ -70,43 +64,43 @@ const Purchase = () => {
         setPricingGroups(response.data.pricings);
       } else {
         console.log('No pricing in database, using admin defaults');
-        // Use the same defaults as admin pricing config
+        // Use the same defaults as admin pricing config (in USD)
         setPricingGroups([
-          { range: '5 IPs', min: 5, max: 5, price: 10 },
-          { range: '10 IPs', min: 10, max: 10, price: 9 },
-          { range: '25 IPs', min: 25, max: 25, price: 8 },
-          { range: '50 IPs', min: 50, max: 50, price: 7 },
-          { range: '100 IPs', min: 100, max: 100, price: 6 },
-          { range: '200 IPs', min: 200, max: 200, price: 5 },
-          { range: '300 IPs', min: 300, max: 300, price: 4 },
-          { range: '400 IPs', min: 400, max: 400, price: 3.5 },
-          { range: '800 IPs', min: 800, max: 800, price: 3 },
-          { range: '1000 IPs', min: 1000, max: 1000, price: 2.5 },
-          { range: '1200 IPs', min: 1200, max: 1200, price: 2.2 },
-          { range: '1600 IPs', min: 1600, max: 1600, price: 2 },
-          { range: '2200 IPs', min: 2200, max: 2200, price: 1.8 },
-          { range: '3000 IPs', min: 3000, max: 3000, price: 1.5 }
+          { range: '5 IPs', min: 5, max: 5, price: 0.81 },
+          { range: '10 IPs', min: 10, max: 10, price: 1.50 },
+          { range: '25 IPs', min: 25, max: 25, price: 3.50 },
+          { range: '50 IPs', min: 50, max: 50, price: 6.50 },
+          { range: '100 IPs', min: 100, max: 100, price: 12.00 },
+          { range: '200 IPs', min: 200, max: 200, price: 22.00 },
+          { range: '300 IPs', min: 300, max: 300, price: 30.00 },
+          { range: '400 IPs', min: 400, max: 400, price: 35.00 },
+          { range: '800 IPs', min: 800, max: 800, price: 60.00 },
+          { range: '1000 IPs', min: 1000, max: 1000, price: 70.00 },
+          { range: '1200 IPs', min: 1200, max: 1200, price: 80.00 },
+          { range: '1600 IPs', min: 1600, max: 1600, price: 100.00 },
+          { range: '2200 IPs', min: 2200, max: 2200, price: 130.00 },
+          { range: '3000 IPs', min: 3000, max: 3000, price: 160.00 }
         ]);
       }
     } catch (error) {
       console.error('Failed to fetch pricing from API:', error);
       console.log('Using fallback pricing');
-      // Fallback pricing (same as admin defaults)
+      // Fallback pricing (same as admin defaults in USD)
       setPricingGroups([
-        { range: '5 IPs', min: 5, max: 5, price: 10 },
-        { range: '10 IPs', min: 10, max: 10, price: 9 },
-        { range: '25 IPs', min: 25, max: 25, price: 8 },
-        { range: '50 IPs', min: 50, max: 50, price: 7 },
-        { range: '100 IPs', min: 100, max: 100, price: 6 },
-        { range: '200 IPs', min: 200, max: 200, price: 5 },
-        { range: '300 IPs', min: 300, max: 300, price: 4 },
-        { range: '400 IPs', min: 400, max: 400, price: 3.5 },
-        { range: '800 IPs', min: 800, max: 800, price: 3 },
-        { range: '1000 IPs', min: 1000, max: 1000, price: 2.5 },
-        { range: '1200 IPs', min: 1200, max: 1200, price: 2.2 },
-        { range: '1600 IPs', min: 1600, max: 1600, price: 2 },
-        { range: '2200 IPs', min: 2200, max: 2200, price: 1.8 },
-        { range: '3000 IPs', min: 3000, max: 3000, price: 1.5 }
+        { range: '5 IPs', min: 5, max: 5, price: 0.81 },
+        { range: '10 IPs', min: 10, max: 10, price: 1.50 },
+        { range: '25 IPs', min: 25, max: 25, price: 3.50 },
+        { range: '50 IPs', min: 50, max: 50, price: 6.50 },
+        { range: '100 IPs', min: 100, max: 100, price: 12.00 },
+        { range: '200 IPs', min: 200, max: 200, price: 22.00 },
+        { range: '300 IPs', min: 300, max: 300, price: 30.00 },
+        { range: '400 IPs', min: 400, max: 400, price: 35.00 },
+        { range: '800 IPs', min: 800, max: 800, price: 60.00 },
+        { range: '1000 IPs', min: 1000, max: 1000, price: 70.00 },
+        { range: '1200 IPs', min: 1200, max: 1200, price: 80.00 },
+        { range: '1600 IPs', min: 1600, max: 1600, price: 100.00 },
+        { range: '2200 IPs', min: 2200, max: 2200, price: 130.00 },
+        { range: '3000 IPs', min: 3000, max: 3000, price: 160.00 }
       ]);
     }
   };
@@ -118,18 +112,6 @@ const Purchase = () => {
     } catch (error) {
       console.error('Failed to fetch proxy stats:', error);
       setProxyStats([]);
-    }
-  };
-
-  const fetchDollarRate = async () => {
-    try {
-      const response = await api.get('/auth/dollar-rate');
-      if (response.data && response.data.rate) {
-        setDollarRate(response.data.rate);
-      }
-    } catch (error) {
-      console.error('Failed to fetch dollar rate:', error);
-      // Keep default rate of 12
     }
   };
 
@@ -151,7 +133,7 @@ const Purchase = () => {
       return;
     }
 
-    if (balance < totalPriceGHS) {
+    if (balance < tierPrice) {
       setError('Insufficient wallet balance');
       setLoading(false);
       return;
@@ -197,10 +179,10 @@ const Purchase = () => {
                 Available Balance
               </Typography>
               <Typography variant="h4" sx={{ color: '#1976d2', fontWeight: 'bold', fontSize: '1.5rem' }}>
-                ${(balance / dollarRate).toFixed(2)}
+                ${balance.toFixed(2)}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mt: 0.25 }}>
-                (₵{balance.toLocaleString()} GHS)
+                USD
               </Typography>
             </Box>
           </Paper>
@@ -298,14 +280,14 @@ const Purchase = () => {
                     mb: 0.3,
                     textShadow: selectedIPs === tier.min ? '0 1px 2px rgba(25, 118, 210, 0.3)' : 'none'
                   }}>
-                    ${(tier.price / dollarRate).toFixed(2)}
+                    ${tier.price.toFixed(2)}
                   </Typography>
 
                   <Typography variant="caption" color="text.secondary" sx={{
                     fontSize: '0.6rem',
                     fontWeight: '500'
                   }}>
-                    per IP (₵{tier.price})
+                    for {tier.min} proxies
                   </Typography>
                 </CardContent>
               </Card>
@@ -367,7 +349,7 @@ const Purchase = () => {
                 <Box sx={{ textAlign: 'center', mb: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
                     <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-                      Price per IP
+                      Tier Price
                     </Typography>
                     <Typography variant="body2" color="success.main" sx={{ fontSize: '0.7rem', ml: 1 }}>
                       ({getAvailableStock(selectedIPs)} available)
@@ -386,14 +368,14 @@ const Purchase = () => {
                     fontWeight: 'bold',
                     fontSize: '2rem'
                   }}>
-                    ${pricePerIPUSD.toFixed(2)}
+                    ${tierPrice.toFixed(2)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mt: 0.25 }}>
-                    (₵{pricePerIP} GHS)
+                    for {selectedIPs} proxies
                   </Typography>
                   <Box sx={{ mt: 0.25 }}>
                     <Chip
-                      label={`${selectedIPs} IPs selected`}
+                      label={`${selectedIPs}IP = $${tierPrice.toFixed(2)}`}
                       sx={{
                         mr: 0.5,
                         bgcolor: '#fff3e0',
@@ -486,13 +468,13 @@ const Purchase = () => {
                       fontWeight: 'bold',
                       fontSize: '1.5rem'
                     }}>
-                      ${totalPriceUSD.toFixed(2)}
+                      ${tierPrice.toFixed(2)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mt: 0.25 }}>
-                      (₵{totalPriceGHS.toLocaleString()} GHS)
+                      USD
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                      {selectedIPs} IPs × ${pricePerIPUSD.toFixed(2)} each
+                      {selectedIPs}IP = ${tierPrice.toFixed(2)}
                     </Typography>
                   </Box>
 

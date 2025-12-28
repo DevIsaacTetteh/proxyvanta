@@ -72,14 +72,11 @@ const Wallet = () => {
   
   // Currency conversion rates (NGN to USD for Nigerians) - will be fetched from backend
   const [exchangeRate, setExchangeRate] = useState(null);
-  // USD to GHS conversion rate
-  const [dollarRate, setDollarRate] = useState(12);
 
   useEffect(() => {
     fetchWalletData(true); // Mark as initial load
     fetchNews();
     fetchExchangeRate();
-    fetchDollarRate();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Refresh data when location changes (navigation)
@@ -181,18 +178,6 @@ const Wallet = () => {
         // Keep current rate if other API error
         console.warn('Exchange rate API error:', error.response?.data?.message);
       }
-    }
-  };
-
-  const fetchDollarRate = async () => {
-    try {
-      const response = await api.get('/auth/dollar-rate');
-      if (response.data && response.data.rate) {
-        setDollarRate(response.data.rate);
-      }
-    } catch (error) {
-      console.error('Failed to fetch dollar rate:', error);
-      // Keep default rate of 12
     }
   };
 
@@ -485,7 +470,7 @@ const Wallet = () => {
                   <Skeleton variant="text" width={80} height={24} sx={{ bgcolor: 'rgba(255,255,255,0.3)', mx: 'auto' }} />
                 ) : (
                   <>
-                    ${(balance / dollarRate).toFixed(2)}
+                    ${balance.toFixed(2)}
                     <Typography
                       component="span"
                       sx={{
@@ -1460,7 +1445,7 @@ const Wallet = () => {
                   min: selectedCountry === 'crypto' ? 1 : 1,
                   step: 0.01
                 }}
-                helperText={selectedCountry === 'crypto' ? 'Minimum deposit: $10.00' : selectedCountry === 'nigeria' ? 'Minimum deposit: ₦100.00' : 'Minimum deposit: ₵1.00'}
+                helperText={selectedCountry === 'crypto' ? 'Minimum deposit: $1.00' : selectedCountry === 'nigeria' ? 'Minimum deposit: ₦100.00' : 'Minimum deposit: ₵1.00'}
               />
 
               {selectedCountry === 'nigeria' && amount && (
@@ -1554,7 +1539,7 @@ const Wallet = () => {
           {showAmountInput && (
             <Button
               onClick={() => {
-                if (parseFloat(amount) >= (selectedCountry === 'nigeria' ? 100 : selectedCountry === 'crypto' ? 10 : 1)) {
+                if (parseFloat(amount) >= (selectedCountry === 'nigeria' ? 100 : selectedCountry === 'crypto' ? 1 : 1)) {
                   if (selectedCountry === 'nigeria') {
                     setConfirmationDialogOpen(true);
                   } else {
@@ -1566,7 +1551,7 @@ const Wallet = () => {
               disabled={
                 loading || 
                 !amount || 
-                parseFloat(amount) < (selectedCountry === 'nigeria' ? 100 : selectedCountry === 'crypto' ? 10 : 1) ||
+                parseFloat(amount) < (selectedCountry === 'nigeria' ? 100 : selectedCountry === 'crypto' ? 1 : 1) ||
                 (selectedCountry === 'nigeria' && exchangeRate === null)
               }
             >

@@ -21,11 +21,8 @@ const Dashboard = () => {
   const { user } = useAuth();
   const [guideOpen, setGuideOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [dollarRate, setDollarRate] = useState(12);
 
   useEffect(() => {
-    fetchDollarRate();
-    
     // Auto-show guide for new users (you can customize this logic)
     const hasSeenGuide = localStorage.getItem('hasSeenNavigationGuide');
 
@@ -58,18 +55,6 @@ const Dashboard = () => {
   const resetGuide = () => {
     localStorage.removeItem('hasSeenNavigationGuide');
     setGuideOpen(true);
-  };
-
-  const fetchDollarRate = async () => {
-    try {
-      const response = await api.get('/auth/dollar-rate');
-      if (response.data && response.data.rate) {
-        setDollarRate(response.data.rate);
-      }
-    } catch (error) {
-      console.error('Failed to fetch dollar rate:', error);
-      // Keep default rate of 12
-    }
   };
 
   const quickActions = [
@@ -110,8 +95,7 @@ const Dashboard = () => {
   const stats = [
     {
       label: 'Wallet Balance',
-      value: `$${(user?.walletBalance / dollarRate)?.toFixed(2) || '0.00'}`,
-      subValue: `₵${user?.walletBalance?.toFixed(2) || '0.00'} GHS`,
+      value: `$${user?.walletBalance?.toFixed(2) || '0.00'}`,
       icon: <WalletIcon />,
       color: 'success.main'
     },
