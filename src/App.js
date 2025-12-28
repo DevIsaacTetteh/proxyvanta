@@ -15,6 +15,7 @@ import FloatingSupportButton from './components/FloatingSupportButton';
 import NavigationGuide from './components/NavigationGuide';
 import Dashboard from './components/Dashboard';
 import PaymentVerification from './components/PaymentVerification';
+import api from './services/api';
 import {
   AppBar,
   Toolbar,
@@ -467,6 +468,7 @@ const Layout = ({ children }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [supportOpen, setSupportOpen] = React.useState(false);
   const [guideOpen, setGuideOpen] = React.useState(false);
+  const [dollarRate, setDollarRate] = React.useState(12);
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -503,6 +505,22 @@ const Layout = ({ children }) => {
     { text: 'Credentials', icon: <SecurityIcon />, path: '/credentials' },
     { text: 'Order History', icon: <HistoryIcon />, path: '/orders' },
   ];
+
+  const fetchDollarRate = async () => {
+    try {
+      const response = await api.get('/auth/dollar-rate');
+      if (response.data && response.data.rate) {
+        setDollarRate(response.data.rate);
+      }
+    } catch (error) {
+      console.error('Failed to fetch dollar rate:', error);
+      // Keep default rate of 12
+    }
+  };
+
+  React.useEffect(() => {
+    fetchDollarRate();
+  }, []);
 
   return (
     <Box>
@@ -633,7 +651,7 @@ const Layout = ({ children }) => {
           }}>
             {user && (
               <Chip
-                label={`₵${user.walletBalance?.toFixed(2) || '0.00'}`}
+                label={`$${(user.walletBalance / dollarRate)?.toFixed(2) || '0.00'}`}
                 variant="outlined"
                 sx={{
                   color: 'white',
@@ -686,7 +704,7 @@ const Layout = ({ children }) => {
                   {user && (
                     <Box sx={{ p: 2, borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
                       <Chip
-                        label={`Balance: ₵${user.walletBalance?.toFixed(2) || '0.00'}`}
+                        label={`Balance: $${(user.walletBalance / dollarRate)?.toFixed(2) || '0.00'}`}
                         variant="outlined"
                         sx={{
                           width: '100%',

@@ -12,6 +12,7 @@ const Purchase = () => {
   const [balance, setBalance] = useState(0);
   const [pricingGroups, setPricingGroups] = useState([]);
   const [proxyStats, setProxyStats] = useState([]);
+  const [dollarRate, setDollarRate] = useState(12); // Default rate
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,7 +24,9 @@ const Purchase = () => {
   };
 
   const pricePerIP = getPricePerIP(selectedIPs);
-  const totalPrice = selectedIPs * pricePerIP;
+  const totalPriceGHS = selectedIPs * pricePerIP;
+  const pricePerIPUSD = pricePerIP / dollarRate;
+  const totalPriceUSD = totalPriceGHS / dollarRate;
 
   const ipOptions = [5, 10, 25, 50, 100, 200, 300, 400, 800, 1000, 1200, 1600, 2200, 3000];
 
@@ -31,9 +34,13 @@ const Purchase = () => {
     fetchBalance();
     fetchPricing();
     fetchProxyStats();
+    fetchDollarRate();
     
-    // Refresh pricing every 30 seconds to ensure current rates
-    const pricingInterval = setInterval(fetchPricing, 30 * 1000);
+    // Refresh pricing and dollar rate every 30 seconds to ensure current rates
+    const pricingInterval = setInterval(() => {
+      fetchPricing();
+      fetchDollarRate();
+    }, 30 * 1000);
     
     return () => clearInterval(pricingInterval);
   }, []);
@@ -114,6 +121,18 @@ const Purchase = () => {
     }
   };
 
+  const fetchDollarRate = async () => {
+    try {
+      const response = await api.get('/auth/dollar-rate');
+      if (response.data && response.data.rate) {
+        setDollarRate(response.data.rate);
+      }
+    } catch (error) {
+      console.error('Failed to fetch dollar rate:', error);
+      // Keep default rate of 12
+    }
+  };
+
   const getAvailableStock = (ipCount) => {
     const stat = proxyStats.find(s => s.ip === ipCount);
     return stat ? stat.totalAvailable : 0;
@@ -132,7 +151,7 @@ const Purchase = () => {
       return;
     }
 
-    if (balance < totalPrice) {
+    if (balance < totalPriceGHS) {
       setError('Insufficient wallet balance');
       setLoading(false);
       return;
@@ -177,8 +196,11 @@ const Purchase = () => {
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem', fontWeight: 500 }}>
                 Available Balance
               </Typography>
-              <Typography variant="h4" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
-                ₵{(balance || 0).toLocaleString()}
+              <Typography variant="h4" sx={{ color: '#1976d2', fontWeight: 'bold', fontSize: '1.5rem' }}>
+                ${(balance / dollarRate).toFixed(2)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mt: 0.25 }}>
+                (₵{balance.toLocaleString()} GHS)
               </Typography>
             </Box>
           </Paper>
@@ -276,14 +298,14 @@ const Purchase = () => {
                     mb: 0.3,
                     textShadow: selectedIPs === tier.min ? '0 1px 2px rgba(25, 118, 210, 0.3)' : 'none'
                   }}>
-                    ₵{tier.price}
+                    ${(tier.price / dollarRate).toFixed(2)}
                   </Typography>
 
                   <Typography variant="caption" color="text.secondary" sx={{
                     fontSize: '0.6rem',
                     fontWeight: '500'
                   }}>
-                    per IP
+                    per IP (₵{tier.price})
                   </Typography>
                 </CardContent>
               </Card>
@@ -364,7 +386,10 @@ const Purchase = () => {
                     fontWeight: 'bold',
                     fontSize: '2rem'
                   }}>
-                    ₵{pricePerIP}
+                    ${pricePerIPUSD.toFixed(2)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mt: 0.25 }}>
+                    (₵{pricePerIP} GHS)
                   </Typography>
                   <Box sx={{ mt: 0.25 }}>
                     <Chip
@@ -461,10 +486,13 @@ const Purchase = () => {
                       fontWeight: 'bold',
                       fontSize: '1.5rem'
                     }}>
-                      ₵{(totalPrice || 0).toLocaleString()}
+                      ${totalPriceUSD.toFixed(2)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mt: 0.25 }}>
+                      (₵{totalPriceGHS.toLocaleString()} GHS)
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                      {selectedIPs} IPs × ₵{pricePerIP} each
+                      {selectedIPs} IPs × ${pricePerIPUSD.toFixed(2)} each
                     </Typography>
                   </Box>
 

@@ -15,13 +15,17 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import NavigationGuide from './NavigationGuide';
+import api from '../services/api';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [guideOpen, setGuideOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [dollarRate, setDollarRate] = useState(12);
 
   useEffect(() => {
+    fetchDollarRate();
+    
     // Auto-show guide for new users (you can customize this logic)
     const hasSeenGuide = localStorage.getItem('hasSeenNavigationGuide');
 
@@ -54,6 +58,18 @@ const Dashboard = () => {
   const resetGuide = () => {
     localStorage.removeItem('hasSeenNavigationGuide');
     setGuideOpen(true);
+  };
+
+  const fetchDollarRate = async () => {
+    try {
+      const response = await api.get('/auth/dollar-rate');
+      if (response.data && response.data.rate) {
+        setDollarRate(response.data.rate);
+      }
+    } catch (error) {
+      console.error('Failed to fetch dollar rate:', error);
+      // Keep default rate of 12
+    }
   };
 
   const quickActions = [
@@ -94,7 +110,8 @@ const Dashboard = () => {
   const stats = [
     {
       label: 'Wallet Balance',
-      value: `₵${user?.walletBalance?.toFixed(2) || '0.00'}`,
+      value: `$${(user?.walletBalance / dollarRate)?.toFixed(2) || '0.00'}`,
+      subValue: `₵${user?.walletBalance?.toFixed(2) || '0.00'} GHS`,
       icon: <WalletIcon />,
       color: 'success.main'
     },
@@ -254,6 +271,19 @@ const Dashboard = () => {
                     >
                       {stat.value}
                     </Typography>
+                    {stat.subValue && (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                          mt: 0.5,
+                          fontWeight: 500
+                        }}
+                      >
+                        {stat.subValue}
+                      </Typography>
+                    )}
                   </Box>
                   <Avatar sx={{
                     bgcolor: `${stat.color}15`,
